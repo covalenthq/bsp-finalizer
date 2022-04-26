@@ -25,7 +25,7 @@ class LogFormat(logging.Formatter):
         return formatter.format(record)
 
     @staticmethod
-    def init_logger(class_name):
+    def init_logger(class_name, console_mode=False):
         logger = logging.getLogger(class_name)
         logger.setLevel(logging.DEBUG)
 
@@ -34,10 +34,15 @@ class LogFormat(logging.Formatter):
         ch.suffix = "%Y-%m-%d_%H-%M-%S.log"
         # ch = logging.FileHandler("logs.txt")
         ch.setLevel(logging.DEBUG)
+        format = LogFormat()
 
-        ch.setFormatter(LogFormat())
+        ch.setFormatter(format)
 
         logger.addHandler(ch)
+        if console_mode:
+            console_handler = logging.StreamHandler()
+            console_handler.setFormatter(format)
+            logger.addHandler(console_handler)
         logger.propagate = False
 
         return logger

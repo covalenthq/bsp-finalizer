@@ -1,10 +1,16 @@
 import logging
+import time
 
 from contract import ProofChainContract
 from dbmanager import DBManager
 from finalizer import Finalizer
 import os
 from dotenv import load_dotenv
+
+
+def is_any_thread_alive(threads):
+    return True in [t.is_alive() for t in threads]
+
 
 if __name__ == "__main__":
 
@@ -34,13 +40,17 @@ if __name__ == "__main__":
         database=DB_DATABASE,
         host=DB_HOST
     )
+    dbm.daemon = True
 
-    dbm.start()
     finalizer = Finalizer(contract)
+    finalizer.daemon = True
+    dbm.start()
+
     finalizer.start()
 
-    dbm.join()
-    finalizer.join()
+    while is_any_thread_alive([finalizer, dbm]):
+        time.sleep(0.3)
+
     #
     # contract.send_finalize(4, 10430382)
     # contract.subscribe_on_event(handle_event)
