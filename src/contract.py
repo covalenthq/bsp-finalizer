@@ -1,6 +1,3 @@
-import asyncio
-import logging
-import pprint
 import statistics
 import traceback
 
@@ -29,7 +26,7 @@ class ProofChainContract:
                 abi=f.read()
             )
 
-        self.logger = logformat.LogFormat.init_logger("Contract")
+        self.logger = logformat.LogFormat.init_logger("Contract", console_mode=True)
 
     # asynchronous defined function to loop
     # this loop sets up an event filter and is looking for new entires for the "PairCreated" event
