@@ -95,7 +95,7 @@ class DBManager(threading.Thread):
                 cur = conn.cursor()
 
         except (Exception, psycopg2.DatabaseError) as ex:
-            self.logger.warning(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+            self.logger.critical(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
             if conn is not None:
                 conn.close()
         finally:

@@ -41,7 +41,7 @@ class ProofChainContract:
     #             print(e)
     #             self.subscribe_on_event(cb)
 
-    def send_finalize(self, chainId, blockHeight, wait_for_confirming=None):
+    def send_finalize(self, chainId, blockHeight, timeout=None):
         self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address)
         transaction = self.contract.functions.finalizeAndRewardSpecimenSession(
             chainId,
@@ -55,9 +55,9 @@ class ProofChainContract:
         tx_hash = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
         self.logger.info("sent a transaction for {} {} nonce: {} balance: {}"
                          .format(chainId, blockHeight, self.nonce, self.w3.eth.get_balance(self.finalizer_address)))
-        if wait_for_confirming is not None:
+        if timeout is not None:
             try:
-                self.w3.eth.wait_for_transaction_receipt(tx_hash, wait_for_confirming)
+                self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout)
                 receipt = self.w3.eth.get_transaction_receipt(tx_hash)
 
                 if receipt['status'] == 0:
