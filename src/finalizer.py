@@ -43,7 +43,7 @@ class Finalizer(threading.Thread):
     def refinalize_rejected_requests(self):
         to_send = []
         for fr in FinalizationRequest.get_requests_to_be_confirmed():
-            if fr.finalized_time < time.time() - 200:
+            if fr.finalized_time < time.time() - 600:
                 to_send.append(fr)
         if len(to_send) == 0:
             return
@@ -58,7 +58,7 @@ class Finalizer(threading.Thread):
 
     def _attempt_to_finalize(self, fr):
         try:
-            self.contract.send_finalize(int(fr.chainId), int(fr.blockHeight), 60)
+            self.contract.send_finalize(int(fr.chainId), int(fr.blockHeight), 300)
         except Exception as ex:
             self.logger.critical(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
         fr.finalize_request()
