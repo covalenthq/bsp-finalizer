@@ -140,6 +140,3 @@ class DBManager(threading.Thread):
         for fr in FinalizationRequest.get_requests_to_be_finalized():
             if fr.session_started_block_id < block_id:
                 return
-        with open("last_block_id", "w") as f:
-            f.write(str(block_id))
-        DBManager.last_block_id = block_id
