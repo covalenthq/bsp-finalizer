@@ -1,7 +1,8 @@
 import logging
+import os
 from logging.handlers import TimedRotatingFileHandler
 
-
+PATH = os.getenv('PATH')
 class LogFormat(logging.Formatter):
 
     grey = "\x1b[38;20m"
@@ -28,8 +29,8 @@ class LogFormat(logging.Formatter):
     def init_logger(class_name, console_mode=False):
         logger = logging.getLogger(class_name)
         logger.setLevel(logging.DEBUG)
-
-        logname = "logs/{}/log".format(class_name)
+        logpath = "%s/logs/{}/log" % (PATH)
+        logname = logpath.format(class_name)
         ch = TimedRotatingFileHandler(logname, when="D", interval=1)
         ch.suffix = "%Y-%m-%d_%H-%M-%S.log"
         # ch = logging.FileHandler("logs.txt")

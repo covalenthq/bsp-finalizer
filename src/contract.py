@@ -4,11 +4,12 @@ import traceback
 from web3.exceptions import TimeExhausted
 from web3.middleware import geth_poa_middleware
 import web3.auto
+import os
 from web3 import Web3
 
 import logformat
 
-
+PATH = os.getenv('PATH')
 class ProofChainContract:
     def __init__(self, rpc_endpoint, finalizer_address, finalizer_prvkey, proofchain_address):
         self.counter = 0
@@ -20,7 +21,7 @@ class ProofChainContract:
         self.gasPrice = web3.auto.w3.toWei('102', 'gwei')
         self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
         self.contractAddress: str = proofchain_address
-        with open("abi/ProofChainContractABI", "r") as f:
+        with open(PATH+"/abi/ProofChainContractABI", "r") as f:
             self.contract = self.w3.eth.contract(
                 address=self.contractAddress,
                 abi=f.read()
