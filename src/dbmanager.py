@@ -95,7 +95,7 @@ class DBManager(threading.Thread):
                 cur = conn.cursor()
 
         except (Exception, psycopg2.DatabaseError) as ex:
-            self.logger.critical(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+            self.logger.critical(''.join(traceback.format_exception(ex)))
             if conn is not None:
                 conn.close()
         finally:
@@ -114,7 +114,7 @@ class DBManager(threading.Thread):
                 self.__main_loop()
                 time.sleep(60)
             except (Exception, psycopg2.DatabaseError) as ex:
-                self.logger.warning(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+                self.logger.warning(''.join(traceback.format_exception(ex)))
                 # this should never happen
                 self.__main_loop()
 
@@ -130,7 +130,7 @@ class DBManager(threading.Thread):
             else:
                 DBManager.last_block_id = 1
         except Exception as ex:
-            self.logger.warning(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+            self.logger.warning(''.join(traceback.format_exception(ex)))
 
     @staticmethod
     def __update_cursor(block_id):

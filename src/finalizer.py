@@ -23,7 +23,7 @@ class Finalizer(threading.Thread):
         try:
             bn = self.contract.block_number()
         except Exception as ex:
-            self.logger.critical(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+            self.logger.critical(''.join(traceback.format_exception(ex)))
             return
 
         for fr in frs:
@@ -68,5 +68,5 @@ class Finalizer(threading.Thread):
             fr.finalize_request()
             fr.confirm_later()
         except Exception as ex:
-            self.logger.critical(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+            self.logger.critical(''.join(traceback.format_exception(ex)))
 
