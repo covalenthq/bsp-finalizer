@@ -21,7 +21,7 @@ class Finalizer(threading.Thread):
         # while len(frs) > 0:
         ready_to_finalize = []
         try:
-            bn = self._retry_with_backoff(self.contract.block_number)
+            bn = self.contract.block_number()
         except Exception as ex:
             self.logger.critical(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
             return
@@ -64,22 +64,9 @@ class Finalizer(threading.Thread):
 
     def _attempt_to_finalize(self, fr):
         try:
-            self._retry_with_backoff(self.contract.send_finalize, chainId=int(fr.chainId), blockHeight=int(fr.blockHeight), timeout=300)
+            self.contract.send_finalize(chainId=int(fr.chainId), blockHeight=int(fr.blockHeight), timeout=300)
+            fr.finalize_request()
+            fr.confirm_later()
         except Exception as ex:
             self.logger.critical(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
-        fr.finalize_request()
-        fr.confirm_later()
 
-    def _retry_with_backoff(self, fn, retries=2, backoff_in_seconds=1, **kwargs):
-        retries_left = retries
-        while True:
-            try:
-                return fn(**kwargs)
-            except Exception as ex:
-                if retries_left == 0:
-                    raise
-
-                self.logger.warning(f"exception occurred (will retry): {type(ex).__name__}: {ex}")
-                sleep_interval = (backoff_in_seconds * (2 ** i)) + random.uniform(0, 1)
-                time.sleep(sleep_interval)
-                retries_left -= 1

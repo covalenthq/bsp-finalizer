@@ -12,6 +12,7 @@ import logformat
 PATH = os.getenv('PATH')
 class ProofChainContract:
     def __init__(self, rpc_endpoint, finalizer_address, finalizer_prvkey, proofchain_address):
+        self.nonce = None
         self.counter = 0
         self.finalizer_address = finalizer_address
         self.finalizer_prvkey = finalizer_prvkey
@@ -42,8 +43,57 @@ class ProofChainContract:
     #             print(e)
     #             self.subscribe_on_event(cb)
 
-    def send_finalize(self, chainId, blockHeight, timeout=None):
-        self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address)
+    class Receipt():
+        def __init__(self, fields):
+            self.blockNumber = fields['blockNumber']
+            self.cumGasUsed = fields['cumulativeGasUsed']
+            self.gasUsed = fields['gasUsed']
+            self.status = fields['status']
+            self.txHash = fields['transactionHash'].hex()
+            self.txIndex = fields['transactionIndex']
+
+        def succeeded(self):
+            return self.status == 1
+
+        def __str__(self):
+            return (
+                f"blockNumber={self.blockNumber}"
+                f" cumGasUsed={self.cumGasUsed}"
+                f" gasUsed={self.gasUsed}"
+                f" status={self.status}"
+                f" txHash={self.txHash}"
+                f" txIndex={self.txIndex}"
+            )
+
+    def _retry_with_backoff(self, fn, retries=2, backoff_in_seconds=1, **kwargs):
+        retries_left = retries
+        while True:
+            try:
+                match fn(**kwargs):
+                    case (True, result):
+                        return result
+
+                    case (False, sleep_interval):
+                        if sleep_interval > 0:
+                            time.sleep(sleep_interval)
+                        retries_left -= 1
+
+            except Exception as ex:
+                if retries_left == 0:
+                    raise
+
+                self.logger.warning(f"exception occurred (will retry): {type(ex).__name__}: {ex}")
+                sleep_interval = (backoff_in_seconds * (2 ** i)) + random.uniform(0, 1)
+                time.sleep(sleep_interval)
+                retries_left -= 1
+
+    def send_finalize(self, **kwargs):
+        return self._retry_with_backoff(self._attempt_send_finalize, **kwargs)
+
+    def _attempt_send_finalize(self, chainId, blockHeight, timeout=None):
+        if self.nonce is None:
+            self._refresh_nonce()
+
         transaction = self.contract.functions.finalizeAndRewardSpecimenSession(
             chainId,
             blockHeight).buildTransaction({
@@ -53,44 +103,60 @@ class ProofChainContract:
             'nonce': self.nonce
         })
         signed_txn = self.w3.eth.account.signTransaction(transaction, private_key=self.finalizer_prvkey)
+
+        balance_before_send = self.w3.eth.get_balance(self.finalizer_address)
+
         tx_hash = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-        self.logger.info("sent a transaction for {} {} nonce: {} balance: {}"
-                         .format(chainId, blockHeight, self.nonce, self.w3.eth.get_balance(self.finalizer_address)))
+
+        self.logger.info(
+            f"sent a transaction for {chainId} {blockHeight}"
+            f" sender_balance={balance_before_send}"
+            f" using_nonce={self.nonce}"
+        )
+
         if timeout is not None:
             try:
-                self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout)
-                receipt = self.w3.eth.get_transaction_receipt(tx_hash)
+                self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=timeout, poll_latency=1.0)
+                receipt = Receipt(self.w3.eth.get_transaction_receipt(tx_hash))
 
-                if receipt['status'] == 0:
-                    self.logger.warning(
-                        "transaction failed with blockNumber {} comGasUsed {} gasUsed {} status {} trxHash {} trxIndex {} "
-                            .format(receipt['blockNumber'],
-                                    receipt['cumulativeGasUsed'],
-                                    receipt['gasUsed'],
-                                    receipt['status'],
-                                    receipt['transactionHash'].hex(),
-                                    receipt['transactionIndex'],
-                                    )
-                    )
+                if receipt.succeeded():
+                    self.logger.info(f"transaction mined with {receipt}")
                 else:
-                    self.logger.info(
-                        "transaction mined with blockNumber {} comGasUsed {} gasUsed {} status {} trxHash {} trxIndex {} "
-                            .format(receipt['blockNumber'],
-                                    receipt['cumulativeGasUsed'],
-                                    receipt['gasUsed'],
-                                    receipt['status'],
-                                    receipt['transactionHash'].hex(),
-                                    receipt['transactionIndex'],
-                                    )
-                    )
+                    self.logger.warning(f"transaction failed with {receipt}")
+
+                return (True, None)
+
             except TimeExhausted as ex:
-                # TODO what can we do?
-                self.increase_gas_price(self.gas)
-                self.logger.critical(''.join(
-                    traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+                self.increase_gas_price()
+                # retry immediately
+                return (False, 0)
+
+            except ValueError as ex:
+                if len(ex.args) != 1 or type(ex.args[0]) != dict:
+                    raise
+
+                jsonrpc_err = ex.args[0]
+                if 'code' not in jsonrpc_err or 'message' not in jsonrpc_err:
+                    raise
+
+                match (jsonrpc_err['code'], jsonrpc_err['message']):
+                    case (-32603, 'nonce too low'):
+                        time.sleep(60) # wait for pending txs to clear
+                        self._refresh_nonce()
+
+                        # retry immediately (we already waited)
+                        return (False, 0)
+                    case _:
+                        raise
+
+    def _refresh_nonce(self):
+        self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address)
 
     def block_number(self):
-        return self.w3.eth.get_block('latest').number
+        return self._retry_with_backoff(self._attempt_block_number)
+
+    def _attempt_block_number(self):
+        return (True, self.w3.eth.get_block('latest').number)
 
     # def subscribe_on_event(self, cb, from_block=1):
     #     event_filter = self.contract.events.SessionStarted.createFilter(fromBlock=from_block)
@@ -120,6 +186,6 @@ class ProofChainContract:
         print("-"*80)
         print("gasPrice: ", statistics.median(gas_prices))
 
-    def increase_gas_price(self, gasPrice):
+    def increase_gas_price(self):
         # try to replace the unmined trx next time in emergency cases
-        self.gasPrice = gasPrice * 1.15
+        self.gasPrice *= 1.15
