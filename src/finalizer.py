@@ -1,3 +1,4 @@
+import random
 import threading
 import time
 import traceback
@@ -19,7 +20,12 @@ class Finalizer(threading.Thread):
         frs = FinalizationRequest.get_requests_to_be_finalized()
         # while len(frs) > 0:
         ready_to_finalize = []
-        bn = self.contract.block_number()
+        try:
+            bn = self._retry_with_backoff(self.contract.block_number)
+        except Exception as ex:
+            self.logger.critical(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+            return
+
         for fr in frs:
             if fr.deadline < bn:
                 ready_to_finalize.append(fr)
@@ -58,8 +64,26 @@ class Finalizer(threading.Thread):
 
     def _attempt_to_finalize(self, fr):
         try:
-            self.contract.send_finalize(int(fr.chainId), int(fr.blockHeight), 300)
+            self._retry_with_backoff(self.contract.send_finalize, chainId=int(fr.chainId), blockHeight=int(fr.blockHeight), timeout=300)
         except Exception as ex:
             self.logger.critical(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
         fr.finalize_request()
         fr.confirm_later()
+
+    def _retry_with_backoff(self, fn, retries=2, backoff_in_seconds=1, **kwargs):
+        i = 0
+        while True:
+            try:
+                return fn(**kwargs)
+            except Exception as ex:
+                if i == retries:
+                    # self.logger.critical("Exception exceeded the backoff: "
+                    #                      + ''.join(traceback.format_exception(etype=type(ex), value=ex,
+                    #                                                           tb=ex.__traceback__)))
+                    raise
+                else:
+                    sleep = (backoff_in_seconds * 2 ** i +
+                             random.uniform(0, 1))
+                    self.logger.warning("{type} exception occurred with step {step}.".format(type=type(ex).__name__, step=i))
+                    time.sleep(sleep)
+                    i += 1

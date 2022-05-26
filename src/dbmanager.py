@@ -95,7 +95,7 @@ class DBManager(threading.Thread):
                 cur = conn.cursor()
 
         except (Exception, psycopg2.DatabaseError) as ex:
-            self.logger.warning(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
+            self.logger.critical(''.join(traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)))
             if conn is not None:
                 conn.close()
         finally:
@@ -140,6 +140,3 @@ class DBManager(threading.Thread):
         for fr in FinalizationRequest.get_requests_to_be_finalized():
             if fr.session_started_block_id < block_id:
                 return
-        with open("last_block_id", "w") as f:
-            f.write(str(block_id))
-        DBManager.last_block_id = block_id
