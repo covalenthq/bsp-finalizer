@@ -14,6 +14,29 @@ import logformat
 
 MODULE_ROOT_PATH = pathlib.Path(__file__).parent.parent.resolve()
 
+class LoggableReceipt():
+    def __init__(self, fields):
+        self.blockNumber = fields['blockNumber']
+        self.cumGasUsed = fields['cumulativeGasUsed']
+        self.gasUsed = fields['gasUsed']
+        self.status = fields['status']
+        self.txHash = fields['transactionHash'].hex()
+        self.txIndex = fields['transactionIndex']
+
+    def succeeded(self):
+        return self.status == 1
+
+    def __str__(self):
+        return (
+            f"blockNumber={self.blockNumber}"
+            f" cumGasUsed={self.cumGasUsed}"
+            f" gasUsed={self.gasUsed}"
+            f" status={self.status}"
+            f" txHash={self.txHash}"
+            f" txIndex={self.txIndex}"
+        )
+
+
 class ProofChainContract:
     def __init__(self, rpc_endpoint, finalizer_address, finalizer_prvkey, proofchain_address):
         self.nonce = None
@@ -46,28 +69,6 @@ class ProofChainContract:
     #         except Exception as e:
     #             print(e)
     #             self.subscribe_on_event(cb)
-
-    class Receipt():
-        def __init__(self, fields):
-            self.blockNumber = fields['blockNumber']
-            self.cumGasUsed = fields['cumulativeGasUsed']
-            self.gasUsed = fields['gasUsed']
-            self.status = fields['status']
-            self.txHash = fields['transactionHash'].hex()
-            self.txIndex = fields['transactionIndex']
-
-        def succeeded(self):
-            return self.status == 1
-
-        def __str__(self):
-            return (
-                f"blockNumber={self.blockNumber}"
-                f" cumGasUsed={self.cumGasUsed}"
-                f" gasUsed={self.gasUsed}"
-                f" status={self.status}"
-                f" txHash={self.txHash}"
-                f" txIndex={self.txIndex}"
-            )
 
     def _retry_with_backoff(self, fn, retries=2, backoff_in_seconds=1, **kwargs):
         retries_left = retries
@@ -124,7 +125,7 @@ class ProofChainContract:
         if timeout is not None:
             try:
                 self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=timeout, poll_latency=1.0)
-                receipt = Receipt(self.w3.eth.get_transaction_receipt(tx_hash))
+                receipt = LoggableReceipt(self.w3.eth.get_transaction_receipt(tx_hash))
 
                 if receipt.succeeded():
                     self.nonce += 1
