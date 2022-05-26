@@ -18,8 +18,8 @@ class ProofChainContract:
         self.finalizer_prvkey = finalizer_prvkey
         self.provider: Web3.HTTPProvider = Web3.HTTPProvider(rpc_endpoint)
         self.w3: Web3 = Web3(self.provider)
-        self.gas = 270000
-        self.gasPrice = web3.auto.w3.toWei('102', 'gwei')
+        self.gas = os.getenv("GAS_LIMIT")
+        self.gasPrice = web3.auto.w3.toWei(os.getenv('GAS_PRICE'), 'gwei')
         self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
         self.contractAddress: str = proofchain_address
         with open(PATH+"/abi/ProofChainContractABI", "r") as f:

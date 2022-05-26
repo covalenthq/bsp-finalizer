@@ -14,6 +14,8 @@ DB_USER=""
 DB_PASSWORD=""
 DB_HOST="master.datamodel.db.covalenthq.com"
 DB_DATABASE="blockchains"
+GAS_PRICE="106" # in Gwei
+GAS_LIMIT="800000"
 ```
 
 Load environment variables:
