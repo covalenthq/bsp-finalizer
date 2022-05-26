@@ -151,3 +151,5 @@ crashlytics-build.properties
 fabric.properties
 
 logs/
+
+last_block_id
