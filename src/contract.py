@@ -24,7 +24,7 @@ class ProofChainContract:
         self.gasPrice = web3.auto.w3.toWei(os.getenv('GAS_PRICE'), 'gwei')
         self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
         self.contractAddress: str = proofchain_address
-        with open(MODULE_ROOT_PATH + "/abi/ProofChainContractABI", "r") as f:
+        with (MODULE_ROOT_PATH / 'abi' / 'ProofChainContractABI').open('r') as f:
             self.contract = self.w3.eth.contract(
                 address=self.contractAddress,
                 abi=f.read()
