@@ -116,7 +116,7 @@ class ProofChainContract:
         tx_hash = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
 
         self.logger.info(
-            f"sent a transaction for {chainId} {blockHeight}"
+            f"sent a transaction for {chainId}/{blockHeight}"
             f" sender_balance={balance_before_send}"
             f" using_nonce={self.nonce}"
         )
@@ -127,6 +127,7 @@ class ProofChainContract:
                 receipt = Receipt(self.w3.eth.get_transaction_receipt(tx_hash))
 
                 if receipt.succeeded():
+                    self.nonce += 1
                     self.logger.info(f"transaction mined with {receipt}")
                 else:
                     self.logger.warning(f"transaction failed with {receipt}")
