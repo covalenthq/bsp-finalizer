@@ -1,5 +1,7 @@
 import statistics
 import traceback
+import random
+import time
 
 from web3.exceptions import TimeExhausted
 from web3.middleware import geth_poa_middleware
@@ -20,7 +22,7 @@ class ProofChainContract:
         self.finalizer_prvkey = finalizer_prvkey
         self.provider: Web3.HTTPProvider = Web3.HTTPProvider(rpc_endpoint)
         self.w3: Web3 = Web3(self.provider)
-        self.gas = os.getenv("GAS_LIMIT")
+        self.gas = int(os.getenv("GAS_LIMIT"))
         self.gasPrice = web3.auto.w3.toWei(os.getenv('GAS_PRICE'), 'gwei')
         self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
         self.contractAddress: str = proofchain_address
@@ -69,6 +71,7 @@ class ProofChainContract:
 
     def _retry_with_backoff(self, fn, retries=2, backoff_in_seconds=1, **kwargs):
         retries_left = retries
+        exp = 0
         while True:
             try:
                 match fn(**kwargs):
@@ -84,10 +87,12 @@ class ProofChainContract:
                 if retries_left == 0:
                     raise
 
-                self.logger.warning(f"exception occurred (will retry): {type(ex).__name__}: {ex}")
-                sleep_interval = (backoff_in_seconds * (2 ** i)) + random.uniform(0, 1)
+                ex_desc = "\n".join(traceback.format_exception_only(ex))
+                self.logger.warning(f"exception occurred (will retry): {ex_desc}")
+                sleep_interval = (backoff_in_seconds * (2 ** exp)) + random.uniform(0, 1)
                 time.sleep(sleep_interval)
                 retries_left -= 1
+                exp += 1
 
     def send_finalize(self, **kwargs):
         return self._retry_with_backoff(self._attempt_send_finalize, **kwargs)
