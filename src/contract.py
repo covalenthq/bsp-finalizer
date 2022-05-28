@@ -6,6 +6,7 @@ import time
 from web3.exceptions import TimeExhausted
 from web3.middleware import geth_poa_middleware
 import web3.auto
+import eth_hash.auto
 import os
 from web3 import Web3
 import pathlib
@@ -15,21 +16,27 @@ import logformat
 MODULE_ROOT_PATH = pathlib.Path(__file__).parent.parent.resolve()
 
 class LoggableReceipt():
-    def __init__(self, fields):
+    def __init__(self, fields, fail_reason=None):
         self.blockNumber = fields['blockNumber']
         self.gasUsed = fields['gasUsed']
         self.status = fields['status']
         self.txHash = fields['transactionHash'].hex()
         self.txIndex = fields['transactionIndex']
+        self.failReason = fail_reason
 
     def succeeded(self):
         return self.status == 1
 
     def __str__(self):
+        err_part = ""
+        if self.status == 0 and len(str(self.failReason)) > 0:
+            err_part = f" err={repr(self.failReason)}"
+
         return (
-            f"txHash={self.txHash}"
+            f"txHash=0x{self.txHash}"
             f" includedAs={self.blockNumber}/{self.txIndex}"
             f" spentGas={self.gasUsed}"
+            f"{err_part}"
         )
 
 
@@ -111,16 +118,20 @@ class ProofChainContract:
         balance_before_send_wei = self.w3.eth.get_balance(self.finalizer_address)
         balance_before_send_glmr = web3.auto.w3.fromWei(balance_before_send_wei, 'ether')
 
+        predicted_tx_hash = eth_hash.auto.keccak(signed_txn.rawTransaction)
+
         self.logger.info(
             f"sending a tx to finalize {chainId}/{blockHeight}"
             f" senderBalance={balance_before_send_glmr}GLMR"
-            f" txNonce={self.nonce}"
+            f" senderNonce={self.nonce}"
+            f" txHash=0x{predicted_tx_hash.hex()}"
         )
 
         tx_hash = None
         err = None
         try:
             tx_hash = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+            return self.report_transaction_receipt(tx_hash, timeout)
         except ValueError as ex:
             if len(ex.args) != 1 or type(ex.args[0]) != dict:
                 raise
@@ -131,7 +142,7 @@ class ProofChainContract:
 
             match (jsonrpc_err['code'], jsonrpc_err['message']):
                 case (-32603, 'nonce too low'):
-                    self.logger.warning(f"tx failed -- txNonce {self.nonce} was too low")
+                    self.report_transaction_receipt(predicted_tx_hash, timeout, fail_reason="txNonce {self.nonce} was too low")
                     self.logger.info("pausing to allow pending txs to clear, then refreshing nonce...")
                     time.sleep(60)
                     self._refresh_nonce()
@@ -141,27 +152,30 @@ class ProofChainContract:
                 case _:
                     raise
 
-        if timeout is not None:
-            try:
-                self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=timeout, poll_latency=1.0)
-                receipt = LoggableReceipt(self.w3.eth.get_transaction_receipt(tx_hash))
+    def report_transaction_receipt(self, tx_hash, timeout=None, **kwargs):
+        if timeout is None:
+            return (True, None)
 
-                if receipt.succeeded():
-                    self.nonce += 1
-                    self.logger.info(f"tx mined with {receipt}")
-                else:
-                    self.logger.warning(f"tx failed with {receipt}")
+        try:
+            self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=timeout, poll_latency=1.0)
+            receipt = LoggableReceipt(self.w3.eth.get_transaction_receipt(tx_hash), **kwargs)
 
-                return (True, None)
+            if receipt.succeeded():
+                self.nonce += 1
+                self.logger.info(f"tx mined with {receipt}")
+            else:
+                self.logger.warning(f"tx failed with {receipt}")
 
-            except TimeExhausted as ex:
-                self.increase_gas_price()
-                # retry immediately
-                return (False, 0)
+            return (True, None)
+
+        except TimeExhausted as ex:
+            self.increase_gas_price()
+            # retry immediately
+            return (False, 0)
 
     def _refresh_nonce(self):
         self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address)
-        self.logger.info(f"refreshed nonce for sender {self.finalizer_address}: {self.nonce}")
+        self.logger.info(f"refreshed nonce; new nonce is {self.nonce}")
 
     def block_number(self):
         return self._retry_with_backoff(self._attempt_block_number)
