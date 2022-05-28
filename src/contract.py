@@ -44,7 +44,7 @@ class LoggableBounce():
 
         return (
             f"txHash=0x{self.txHash}"
-            f" err={self.err}"
+            f" err={repr(self.err)}"
             f"{detail_parts}"
         )
 
@@ -163,7 +163,7 @@ class ProofChainContract:
 
     def report_transaction_bounce(self, predicted_tx_hash, err, details):
         bounce = LoggableBounce(predicted_tx_hash, err=err, details=details)
-        self.logger.info(f"tx bounced with {bounce}")
+        self.logger.error(f"tx bounced with {bounce}")
 
     def report_transaction_receipt(self, tx_hash, timeout=None, **kwargs):
         if timeout is None:
@@ -226,4 +226,4 @@ class ProofChainContract:
 
     def increase_gas_price(self):
         # try to replace the unmined trx next time in emergency cases
-        self.gasPrice *= 1.15
+        self.gasPrice = int(self.gasPrice * 1.15)
