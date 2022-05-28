@@ -114,7 +114,25 @@ class ProofChainContract:
 
         balance_before_send = self.w3.eth.get_balance(self.finalizer_address)
 
-        tx_hash = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+        try:
+            tx_hash = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+        except ValueError as ex:
+            if len(ex.args) != 1 or type(ex.args[0]) != dict:
+                raise
+
+            jsonrpc_err = ex.args[0]
+            if 'code' not in jsonrpc_err or 'message' not in jsonrpc_err:
+                raise
+
+            match (jsonrpc_err['code'], jsonrpc_err['message']):
+                case (-32603, 'nonce too low'):
+                    time.sleep(60) # wait for pending txs to clear
+                    self._refresh_nonce()
+
+                    # retry immediately (we already waited)
+                    return (False, 0)
+                case _:
+                    raise
 
         self.logger.info(
             f"sent a transaction for {chainId}/{blockHeight}"
@@ -139,24 +157,6 @@ class ProofChainContract:
                 self.increase_gas_price()
                 # retry immediately
                 return (False, 0)
-
-            except ValueError as ex:
-                if len(ex.args) != 1 or type(ex.args[0]) != dict:
-                    raise
-
-                jsonrpc_err = ex.args[0]
-                if 'code' not in jsonrpc_err or 'message' not in jsonrpc_err:
-                    raise
-
-                match (jsonrpc_err['code'], jsonrpc_err['message']):
-                    case (-32603, 'nonce too low'):
-                        time.sleep(60) # wait for pending txs to clear
-                        self._refresh_nonce()
-
-                        # retry immediately (we already waited)
-                        return (False, 0)
-                    case _:
-                        raise
 
     def _refresh_nonce(self):
         self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address)
