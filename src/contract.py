@@ -22,21 +22,30 @@ class LoggableReceipt():
         self.status = fields['status']
         self.txHash = fields['transactionHash'].hex()
         self.txIndex = fields['transactionIndex']
-        self.failReason = fail_reason
 
     def succeeded(self):
         return self.status == 1
 
     def __str__(self):
-        err_part = ""
-        if self.status == 0 and len(str(self.failReason)) > 0:
-            err_part = f" err={repr(self.failReason)}"
-
         return (
             f"txHash=0x{self.txHash}"
             f" includedAs={self.blockNumber}/{self.txIndex}"
             f" spentGas={self.gasUsed}"
-            f"{err_part}"
+        )
+
+class LoggableBounce():
+    def __init__(self, tx_hash, err, details={}):
+        self.txHash = tx_hash.hex()
+        self.err = err
+        self.details = details
+
+    def __str__(self):
+        detail_parts = ''.join([f" {k}={v}" for k, v in self.details.items()])
+
+        return (
+            f"txHash=0x{self.txHash}"
+            f" err={self.err}"
+            f"{detail_parts}"
         )
 
 
@@ -142,7 +151,7 @@ class ProofChainContract:
 
             match (jsonrpc_err['code'], jsonrpc_err['message']):
                 case (-32603, 'nonce too low'):
-                    self.report_transaction_receipt(predicted_tx_hash, timeout, fail_reason="txNonce {self.nonce} was too low")
+                    self.report_transaction_bounce(predicted_tx_hash, err="nonce too low", details={"txNonce": self.nonce})
                     self.logger.info("pausing to allow pending txs to clear, then refreshing nonce...")
                     time.sleep(60)
                     self._refresh_nonce()
@@ -151,6 +160,10 @@ class ProofChainContract:
                     return (False, 0)
                 case _:
                     raise
+
+    def report_transaction_bounce(self, predicted_tx_hash, err, details):
+        bounce = LoggableBounce(predicted_tx_hash, err=err, details=details)
+        self.logger.info(f"tx bounced with {bounce}")
 
     def report_transaction_receipt(self, tx_hash, timeout=None, **kwargs):
         if timeout is None:
