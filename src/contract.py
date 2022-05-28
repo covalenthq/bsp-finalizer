@@ -126,6 +126,7 @@ class ProofChainContract:
 
             match (jsonrpc_err['code'], jsonrpc_err['message']):
                 case (-32603, 'nonce too low'):
+                    self.logger.warning(f"nonce {self.none} was too low; refreshing...")
                     time.sleep(60) # wait for pending txs to clear
                     self._refresh_nonce()
 
@@ -160,6 +161,7 @@ class ProofChainContract:
 
     def _refresh_nonce(self):
         self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address)
+        self.logger.info(f"fetched nonce for {self.finalizer_address}: {self.nonce}")
 
     def block_number(self):
         return self._retry_with_backoff(self._attempt_block_number)
