@@ -17,7 +17,6 @@ MODULE_ROOT_PATH = pathlib.Path(__file__).parent.parent.resolve()
 class LoggableReceipt():
     def __init__(self, fields):
         self.blockNumber = fields['blockNumber']
-        self.cumGasUsed = fields['cumulativeGasUsed']
         self.gasUsed = fields['gasUsed']
         self.status = fields['status']
         self.txHash = fields['transactionHash'].hex()
@@ -28,12 +27,9 @@ class LoggableReceipt():
 
     def __str__(self):
         return (
-            f"blockNumber={self.blockNumber}"
-            f" cumGasUsed={self.cumGasUsed}"
-            f" gasUsed={self.gasUsed}"
-            f" status={self.status}"
-            f" txHash={self.txHash}"
-            f" txIndex={self.txIndex}"
+            f"txHash={self.txHash}"
+            f" includedAs={self.blockNumber}/{self.txIndex}"
+            f" spentGas={self.gasUsed}"
         )
 
 
@@ -112,8 +108,17 @@ class ProofChainContract:
         })
         signed_txn = self.w3.eth.account.signTransaction(transaction, private_key=self.finalizer_prvkey)
 
-        balance_before_send = self.w3.eth.get_balance(self.finalizer_address)
+        balance_before_send_wei = self.w3.eth.get_balance(self.finalizer_address)
+        balance_before_send_glmr = web3.auto.w3.fromWei(balance_before_send_wei, 'ether')
 
+        self.logger.info(
+            f"sending a tx to finalize {chainId}/{blockHeight}"
+            f" senderBalance={balance_before_send_glmr}GLMR"
+            f" txNonce={self.nonce}"
+        )
+
+        tx_hash = None
+        err = None
         try:
             tx_hash = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
         except ValueError as ex:
@@ -126,20 +131,15 @@ class ProofChainContract:
 
             match (jsonrpc_err['code'], jsonrpc_err['message']):
                 case (-32603, 'nonce too low'):
-                    self.logger.warning(f"nonce {self.none} was too low; refreshing...")
-                    time.sleep(60) # wait for pending txs to clear
+                    self.logger.warning(f"tx failed -- txNonce {self.nonce} was too low")
+                    self.logger.info("pausing to allow pending txs to clear, then refreshing nonce...")
+                    time.sleep(60)
                     self._refresh_nonce()
 
                     # retry immediately (we already waited)
                     return (False, 0)
                 case _:
                     raise
-
-        self.logger.info(
-            f"sent a transaction for {chainId}/{blockHeight}"
-            f" sender_balance={balance_before_send}"
-            f" using_nonce={self.nonce}"
-        )
 
         if timeout is not None:
             try:
@@ -148,9 +148,9 @@ class ProofChainContract:
 
                 if receipt.succeeded():
                     self.nonce += 1
-                    self.logger.info(f"transaction mined with {receipt}")
+                    self.logger.info(f"tx mined with {receipt}")
                 else:
-                    self.logger.warning(f"transaction failed with {receipt}")
+                    self.logger.warning(f"tx failed with {receipt}")
 
                 return (True, None)
 
@@ -161,7 +161,7 @@ class ProofChainContract:
 
     def _refresh_nonce(self):
         self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address)
-        self.logger.info(f"fetched nonce for {self.finalizer_address}: {self.nonce}")
+        self.logger.info(f"refreshed nonce for sender {self.finalizer_address}: {self.nonce}")
 
     def block_number(self):
         return self._retry_with_backoff(self._attempt_block_number)
