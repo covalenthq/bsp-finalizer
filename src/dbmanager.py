@@ -69,7 +69,7 @@ class DBManager(threading.Thread):
                     with conn.cursor() as cur:
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
                         cur.execute(
-                            r'SELECT * FROM reports.proof_chain_moonbeam WHERE block_id >= %s AND finalization_hash IS NULL;',
+                            r'SELECT * FROM reports.proof_chain_moonbeam WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
                                     (self.last_block_id,))
 
                         outputs = cur.fetchall()
@@ -85,7 +85,7 @@ class DBManager(threading.Thread):
                         self.logger.info("attempting to get more data from {}".format(self.last_block_id))
                         # we need everything after last max block number
                         cur.execute(
-                            r'SELECT * FROM reports.proof_chain_moonbeam WHERE block_id >= %s;',
+                            r'SELECT * FROM reports.proof_chain_moonbeam WHERE observer_chain_session_start_block_id > %s;',
                                     (self.last_block_id,))
                         outputs = cur.fetchall()
 
@@ -120,7 +120,7 @@ class DBManager(threading.Thread):
             self.logger.info("Determining last finalized block from db...")
             with self.__connect() as conn:
                 with conn.cursor() as cur:
-                    cur.execute(r'SELECT block_id FROM reports.proof_chain_moonbeam WHERE finalization_hash IS NULL LIMIT 1')
+                    cur.execute(r'SELECT block_id FROM reports.proof_chain_moonbeam WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1')
                     block_id = cur.fetchone()
             if block_id is not None:
                 self.last_block_id = block_id[0]
