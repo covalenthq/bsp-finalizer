@@ -124,7 +124,7 @@ class DBManager(threading.Thread):
         try:
             conn = self.__connect()
             cur = conn.cursor()
-            cur.execute('select min(block_id) from reports.proof_chain_dbt where finalization_hash is null')
+            cur.execute('select min(block_id) from reports.proof_chain_moonbeam_dbt where finalization_hash is null')
             block_id = cur.fetchone()
             if block_id is not None:
                 DBManager.last_block_id = block_id[0]
