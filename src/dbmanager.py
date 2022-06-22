@@ -63,39 +63,40 @@ class DBManager(threading.Thread):
         conn = None
         try:
             self.logger.info('Connecting to the database...')
-            conn = self.__connect()
-            cur = conn.cursor()
+            with self.__connect() as conn:
             if not self.caught_up:
                 self.logger.info("Started catching up with db.")
-                # we are catching up. So we only need to grab what we need to attempt for finalizing
-                cur.execute(
-                    'select * from reports.proof_chain_moonbeam where finalization_hash IS NULL and block_id >= %s ORDER BY block_id;',
-                            (self.last_block_id,))
-                self.logger.info("Processing {} records from db.".format(cur.rowcount))
 
-                while True:
-                    outputs = cur.fetchmany(10_000)
-                    if len(outputs) == 0 or outputs[0] == None:
-                        break
-                    self._process_outputs(outputs)
+                with conn.cursor() as cur:
+                    # we are catching up. So we only need to grab what we need to attempt for finalizing
+                    cur.execute(
+                        r'SELECT * FROM reports.proof_chain_moonbeam WHERE block_id >= %s AND finalization_hash IS NULL;',
+                                (self.last_block_id,))
+
+                    outputs = cur.fetchall()
+
+                self.logger.info("Processing {} records from db.".format(len(outputs)))
+                self._process_outputs(outputs)
 
                 self.caught_up = True
-
-            self.logger.info("Caught up with db.")
+                self.logger.info("Caught up with db.")
 
             while True:
-                self.logger.info("attempting to get more data from {}".format(self.last_block_id))
-                # we need everything after last max block number
-                cur.execute(
-                    'select * from reports.proof_chain_moonbeam where block_id >= %s ORDER BY block_id;',
-                            (self.last_block_id,))
-                outputs = cur.fetchall()
-                self._process_outputs(outputs)
-                conn.close()
-                self.logger.info('Database connection closed.')
+                with conn.cursor() as cur:
+                    self.logger.info("attempting to get more data from {}".format(self.last_block_id))
+                    # we need everything after last max block number
+                    cur.execute(
+                        r'SELECT * FROM reports.proof_chain_moonbeam WHERE block_id >= %s;',
+                                (self.last_block_id,))
+                    outputs = cur.fetchall()
+
+                if len(outputs) > 0:
+                    self.logger.info("Processing {} records from db.".format(len(outputs)))
+                    self._process_outputs(outputs)
+                else:
+                    self.logger.info("No new records discovered in db.")
+
                 time.sleep(40)
-                conn = self.__connect()
-                cur = conn.cursor()
 
         except (Exception, psycopg2.DatabaseError) as ex:
             self.logger.critical(''.join(traceback.format_exception(ex)))
@@ -123,13 +124,13 @@ class DBManager(threading.Thread):
 
     def __fetch_last_block(self):
         try:
-            conn = self.__connect()
-            cur = conn.cursor()
-            cur.execute('select min(block_id) from reports.proof_chain_moonbeam where finalization_hash is null')
-            block_id = cur.fetchone()
+            with self.__connect() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(r'SELECT block_id FROM reports.proof_chain_moonbeam WHERE finalization_hash IS NULL LIMIT 1')
+                    block_id = cur.fetchone()
             if block_id is not None:
                 self.last_block_id = block_id[0]
-                self.logger.info("starting from block id " + str(self.last_block_id))
+                self.logger.info(f"starting from block id ${self.last_block_id}")
             else:
                 self.last_block_id = 1
         except Exception as ex:
