@@ -64,39 +64,39 @@ class DBManager(threading.Thread):
         try:
             self.logger.info('Connecting to the database...')
             with self.__connect() as conn:
-            if not self.caught_up:
-                self.logger.info("Started catching up with db.")
+                if not self.caught_up:
+                    self.logger.info("Started catching up with db.")
 
-                with conn.cursor() as cur:
-                    # we are catching up. So we only need to grab what we need to attempt for finalizing
-                    cur.execute(
-                        r'SELECT * FROM reports.proof_chain_moonbeam WHERE block_id >= %s AND finalization_hash IS NULL;',
-                                (self.last_block_id,))
+                    with conn.cursor() as cur:
+                        # we are catching up. So we only need to grab what we need to attempt for finalizing
+                        cur.execute(
+                            r'SELECT * FROM reports.proof_chain_moonbeam WHERE block_id >= %s AND finalization_hash IS NULL;',
+                                    (self.last_block_id,))
 
-                    outputs = cur.fetchall()
+                        outputs = cur.fetchall()
 
-                self.logger.info("Processing {} records from db.".format(len(outputs)))
-                self._process_outputs(outputs)
-
-                self.caught_up = True
-                self.logger.info("Caught up with db.")
-
-            while True:
-                with conn.cursor() as cur:
-                    self.logger.info("attempting to get more data from {}".format(self.last_block_id))
-                    # we need everything after last max block number
-                    cur.execute(
-                        r'SELECT * FROM reports.proof_chain_moonbeam WHERE block_id >= %s;',
-                                (self.last_block_id,))
-                    outputs = cur.fetchall()
-
-                if len(outputs) > 0:
                     self.logger.info("Processing {} records from db.".format(len(outputs)))
                     self._process_outputs(outputs)
-                else:
-                    self.logger.info("No new records discovered in db.")
 
-                time.sleep(40)
+                    self.caught_up = True
+                    self.logger.info("Caught up with db.")
+
+                while True:
+                    with conn.cursor() as cur:
+                        self.logger.info("attempting to get more data from {}".format(self.last_block_id))
+                        # we need everything after last max block number
+                        cur.execute(
+                            r'SELECT * FROM reports.proof_chain_moonbeam WHERE block_id >= %s;',
+                                    (self.last_block_id,))
+                        outputs = cur.fetchall()
+
+                    if len(outputs) > 0:
+                        self.logger.info("Processing {} records from db.".format(len(outputs)))
+                        self._process_outputs(outputs)
+                    else:
+                        self.logger.info("No new records discovered in db.")
+
+                    time.sleep(40)
 
         except (Exception, psycopg2.DatabaseError) as ex:
             self.logger.critical(''.join(traceback.format_exception(ex)))
