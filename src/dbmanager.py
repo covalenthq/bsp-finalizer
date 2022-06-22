@@ -123,7 +123,7 @@ class DBManager(threading.Thread):
                     cur.execute(r'SELECT block_id FROM reports.proof_chain_moonbeam WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1')
                     block_id = cur.fetchone()
             if block_id is not None:
-                self.last_block_id = block_id[0]
+                self.last_block_id = block_id[0] - 1
                 self.logger.info(f"starting from block id {self.last_block_id}")
             else:
                 self.last_block_id = 1
