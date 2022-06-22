@@ -71,15 +71,17 @@ class DBManager(threading.Thread):
                     'select * from reports.proof_chain_moonbeam_dbt where finalization_hash IS NULL and block_id >= %s ORDER BY block_id;',
                             (DBManager.last_block_id,))
                 self.logger.info("Processing {} records from db.".format(cur.rowcount))
-                outputs = [cur.fetchone()]
-                if outputs[0] is not None:
+
+                while True:
+                    outputs = cur.fetchmany(10_000)
+                    if len(outputs) == 0 or outputs[0] == None:
+                        break
                     self._process_outputs(outputs)
-                while len(outputs) != 0:
-                    outputs = cur.fetchmany(1000)
-                    self._process_outputs(outputs)
-                    time.sleep(5)
+
                 self.caught_up = True
+
             self.logger.info("Caught up with db.")
+
             while True:
                 self.logger.info("attempting to get more data from {}".format(DBManager.last_block_id))
                 # we need everything after last max block number
