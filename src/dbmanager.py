@@ -120,7 +120,7 @@ class DBManager(threading.Thread):
             self.logger.info("Determining last finalized block from db...")
             with self.__connect() as conn:
                 with conn.cursor() as cur:
-                    cur.execute(r'SELECT block_id FROM reports.proof_chain_moonbeam WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1')
+                    cur.execute(r'SELECT observer_chain_session_start_block_id FROM reports.proof_chain_moonbeam WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1')
                     block_id = cur.fetchone()
             if block_id is not None:
                 self.last_block_id = block_id[0] - 1
