@@ -44,7 +44,7 @@ class DBManager(threading.Thread):
             else:
                 if fr.waiting_for_confirm():
                     fr.confirm_request()
-                    self.__update_cursor(fr.session_started_block_id)
+                    self._update_cursor(fr.session_started_block_id)
                     c += 1
         if fl > 0:
             self.logger.info("{} entries were added for finalizing.".format(fl))
@@ -130,11 +130,11 @@ class DBManager(threading.Thread):
         except Exception as ex:
             self.logger.warning(''.join(traceback.format_exception(ex)))
 
-    @staticmethod
-    def __update_cursor(block_id):
+    def _update_cursor(self, block_id):
         for fr in FinalizationRequest.get_requests_to_be_confirmed():
             if fr.session_started_block_id < block_id:
                 return
         for fr in FinalizationRequest.get_requests_to_be_finalized():
             if fr.session_started_block_id < block_id:
                 return
+        self.last_block_id = block_id
