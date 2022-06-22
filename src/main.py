@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     load_dotenv()
 
-    BLOCK_ID_START = os.getenv("BLOCK_ID_START")
+    BLOCK_ID_START = os.getenv("BLOCK_ID_START", "-1")
     PROOFCHAIN_ADDRESS = os.getenv("PROOFCHAIN_ADDRESS")
     FINALIZER_PRIVATE_KEY = os.getenv("FINALIZER_PRIVATE_KEY")
     FINALIZER_ADDRESS = os.getenv("FINALIZER_ADDRESS")
