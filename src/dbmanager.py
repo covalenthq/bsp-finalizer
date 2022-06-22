@@ -21,6 +21,7 @@ class DBManager(threading.Thread):
         self.database = database
         self.password = password
         self.user = user
+        self.last_block_id = None
 
         self.logger = logformat.LogFormat.init_logger("DB")
         DBManager.starting_point = staring_point
