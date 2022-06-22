@@ -117,13 +117,14 @@ class DBManager(threading.Thread):
 
     def __fetch_last_block(self):
         try:
+            self.logger.info("Determining last finalized block from db...")
             with self.__connect() as conn:
                 with conn.cursor() as cur:
                     cur.execute(r'SELECT block_id FROM reports.proof_chain_moonbeam WHERE finalization_hash IS NULL LIMIT 1')
                     block_id = cur.fetchone()
             if block_id is not None:
                 self.last_block_id = block_id[0]
-                self.logger.info(f"starting from block id ${self.last_block_id}")
+                self.logger.info(f"starting from block id {self.last_block_id}")
             else:
                 self.last_block_id = 1
         except Exception as ex:
