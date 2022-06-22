@@ -23,7 +23,7 @@ class DBManager(threading.Thread):
         self.user = user
         self.last_block_id = None
 
-        self.logger = logformat.LogFormat.init_logger("DB")
+        self.logger = logformat.get_logger("DB")
         self.starting_point = starting_point
 
     def _process_outputs(self, outputs):

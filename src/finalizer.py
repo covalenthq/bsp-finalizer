@@ -11,7 +11,7 @@ class Finalizer(threading.Thread):
     def __init__(self, cn: ProofChainContract):
         super().__init__()
         self.contract = cn
-        self.logger = logformat.LogFormat.init_logger("Finalizer", console_mode=True)
+        self.logger = logformat.get_logger("Finalizer")
 
     def __main_loop(self):
         # self.contract.estimate_gas_price()

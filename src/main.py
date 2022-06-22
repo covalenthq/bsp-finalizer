@@ -1,5 +1,6 @@
 import logging
 import time
+import sys
 
 from contract import ProofChainContract
 from dbmanager import DBManager
@@ -13,7 +14,6 @@ def is_any_thread_alive(threads):
 
 
 if __name__ == "__main__":
-
     load_dotenv()
 
     BLOCK_ID_START = os.getenv("BLOCK_ID_START", "-1")
@@ -26,7 +26,11 @@ if __name__ == "__main__":
     DB_HOST = os.getenv("DB_HOST")
     DB_DATABASE = os.getenv("DB_DATABASE")
 
-    logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(
+        stream=sys.stdout,
+        format="%(levelname)s %(name)s (%(filename)s:%(lineno)d) - %(message)s",
+        level=logging.INFO
+    )
     contract = ProofChainContract(
         rpc_endpoint=RPC_ENDPOINT,
         proofchain_address=PROOFCHAIN_ADDRESS,
