@@ -34,7 +34,7 @@ if __name__ == "__main__":
         finalizer_address=FINALIZER_ADDRESS
     )
     dbm = DBManager(
-        staring_point=int(BLOCK_ID_START),
+        starting_point=int(BLOCK_ID_START),
         user=DB_USER,
         password=DB_PASSWORD,
         database=DB_DATABASE,

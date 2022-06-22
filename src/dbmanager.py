@@ -15,7 +15,7 @@ class DBManager(threading.Thread):
     starting_point: int
     logger: logging.Logger
 
-    def __init__(self, user, password, database, host, staring_point):
+    def __init__(self, user, password, database, host, starting_point):
         super().__init__()
         self.host = host
         self.database = database
@@ -24,7 +24,7 @@ class DBManager(threading.Thread):
         self.last_block_id = None
 
         self.logger = logformat.LogFormat.init_logger("DB")
-        DBManager.starting_point = staring_point
+        self.starting_point = starting_point
 
     def _process_outputs(self, outputs):
         fl = 0
@@ -44,7 +44,7 @@ class DBManager(threading.Thread):
             else:
                 if fr.waiting_for_confirm():
                     fr.confirm_request()
-                    DBManager.__update_cursor(fr.session_started_block_id)
+                    self.__update_cursor(fr.session_started_block_id)
                     c += 1
         if fl > 0:
             self.logger.info("{} entries were added for finalizing.".format(fl))
@@ -65,12 +65,12 @@ class DBManager(threading.Thread):
             self.logger.info('Connecting to the database...')
             conn = self.__connect()
             cur = conn.cursor()
-            if not DBManager.caught_up:
+            if not self.caught_up:
                 self.logger.info("Started catching up with db.")
                 # we are catching up. So we only need to grab what we need to attempt for finalizing
                 cur.execute(
                     'select * from reports.proof_chain_moonbeam_dbt where finalization_hash IS NULL and block_id >= %s ORDER BY block_id;',
-                            (DBManager.last_block_id,))
+                            (self.last_block_id,))
                 self.logger.info("Processing {} records from db.".format(cur.rowcount))
 
                 while True:
@@ -84,11 +84,11 @@ class DBManager(threading.Thread):
             self.logger.info("Caught up with db.")
 
             while True:
-                self.logger.info("attempting to get more data from {}".format(DBManager.last_block_id))
+                self.logger.info("attempting to get more data from {}".format(self.last_block_id))
                 # we need everything after last max block number
                 cur.execute(
                     'select * from reports.proof_chain_moonbeam_dbt where block_id >= %s ORDER BY block_id;',
-                            (DBManager.last_block_id,))
+                            (self.last_block_id,))
                 outputs = cur.fetchall()
                 self._process_outputs(outputs)
                 conn.close()
@@ -108,8 +108,8 @@ class DBManager(threading.Thread):
 
     def run(self):
         # we need to avoid recursion in order to avoid stack depth exceeded exception
-        if DBManager.starting_point != -1:
-            DBManager.last_block_id = DBManager.starting_point
+        if self.starting_point != -1:
+            self.last_block_id = self.starting_point
         else:
             self.__fetch_last_block()
         while True:
@@ -128,10 +128,10 @@ class DBManager(threading.Thread):
             cur.execute('select min(block_id) from reports.proof_chain_moonbeam_dbt where finalization_hash is null')
             block_id = cur.fetchone()
             if block_id is not None:
-                DBManager.last_block_id = block_id[0]
-                self.logger.info("starting from block id " + str(DBManager.last_block_id))
+                self.last_block_id = block_id[0]
+                self.logger.info("starting from block id " + str(self.last_block_id))
             else:
-                DBManager.last_block_id = 1
+                self.last_block_id = 1
         except Exception as ex:
             self.logger.warning(''.join(traceback.format_exception(ex)))
 
