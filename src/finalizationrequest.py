@@ -34,12 +34,14 @@ class FinalizationRequest:
         self.block_id = bid
 
     def confirm_request(self):
-        if self.chainId in FinalizationRequest.requests_to_be_confirmed.keys():
-            FinalizationRequest.requests_to_be_confirmed[self.chainId].pop(self.blockHeight, None)
+        if self.chainId not in FinalizationRequest.requests_to_be_confirmed:
+            return None
+        FinalizationRequest.requests_to_be_confirmed[self.chainId].pop(self.blockHeight, None)
 
     def finalize_request(self):
-        if self.chainId in FinalizationRequest.requests_to_be_finalized.keys():
-            FinalizationRequest.requests_to_be_finalized[self.chainId].pop(self.blockHeight, None)
+        if self.chainId not in FinalizationRequest.requests_to_be_finalized:
+            return None
+        FinalizationRequest.requests_to_be_finalized[self.chainId].pop(self.blockHeight, None)
 
         self.finalized_time = time.time()
 
@@ -62,13 +64,11 @@ class FinalizationRequest:
         return True
 
     def waiting_for_confirm(self):
-        if self.chainId in FinalizationRequest.requests_to_be_confirmed.keys():
-            if self.blockHeight in FinalizationRequest.requests_to_be_confirmed[self.chainId].keys():
-                return True
-        return False
+        if self.chainId not in FinalizationRequest.requests_to_be_confirmed.keys():
+            return False
+        return self.blockHeight in FinalizationRequest.requests_to_be_confirmed[self.chainId]
 
     def waiting_for_finalize(self):
-        if self.chainId in FinalizationRequest.requests_to_be_finalized.keys():
-            if self.blockHeight in FinalizationRequest.requests_to_be_finalized[self.chainId].keys():
-                return True
-        return False
+        if self.chainId not in FinalizationRequest.requests_to_be_finalized.keys():
+            return False
+        return self.blockHeight in FinalizationRequest.requests_to_be_finalized[self.chainId]
