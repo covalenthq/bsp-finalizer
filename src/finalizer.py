@@ -38,12 +38,12 @@ class Finalizer(threading.Thread):
     def run(self) -> None:
         # we need to avoid recursion in order to avoid stack depth exceeded exception
         while True:
-            time.sleep(12)
+            time.sleep(0.5)
             try:
                 self.__main_loop()
             except:
                 # this should never happen
-                self.__main_loop()
+                pass
 
     def refinalize_rejected_requests(self):
         to_send = []
