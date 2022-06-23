@@ -29,6 +29,7 @@ class DBManager(threading.Thread):
     def _process_outputs(self, outputs):
         fl = 0
         c = 0
+        prev_last_block_id = self.last_block_id
         for output in outputs:
             block_id = output[1]
             blockHeight = output[4]
@@ -39,17 +40,19 @@ class DBManager(threading.Thread):
 
             if finalizationHash is None:
                 if not fr.waiting_for_confirm() and not fr.waiting_for_finalize():
-                    fr.finalize_later()
-                    fl += 1
+                    if fr.finalize_later():
+                        fl += 1
             else:
                 if fr.waiting_for_confirm():
-                    fr.confirm_request()
-                    self._update_cursor(fr.session_started_block_id)
-                    c += 1
+                    if fr.confirm_request():
+                        self._update_cursor(fr.session_started_block_id)
+                        c += 1
         if fl > 0:
             self.logger.info("{} entries were added for finalizing.".format(fl))
         if c > 0:
             self.logger.info("{} entries were confirmed.".format(c))
+        if self.last_block_id > prev_last_block_id:
+            self.logger.info(f"updated cursor position: block_id={self.last_block_id}")
 
     def __connect(self):
         return psycopg2.connect(

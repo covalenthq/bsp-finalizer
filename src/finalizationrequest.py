@@ -44,20 +44,22 @@ class FinalizationRequest:
         self.finalized_time = time.time()
 
     def finalize_later(self):
-        if self.chainId in FinalizationRequest.requests_to_be_finalized.keys():
-            FinalizationRequest.requests_to_be_finalized[self.chainId][self.blockHeight] = self
-        else:
-            d = dict()
-            d[self.blockHeight] = self
-            FinalizationRequest.requests_to_be_finalized[self.chainId] = d
+        if self.chainId not in FinalizationRequest.requests_to_be_finalized:
+            FinalizationRequest.requests_to_be_finalized[self.chainId] = dict()
+        reqs_for_chain = FinalizationRequest.requests_to_be_finalized[self.chainId]
+        if self.blockHeight in reqs_for_chain:
+            return False
+        reqs_for_chain[self.blockHeight] = self
+        return True
 
     def confirm_later(self):
-        if self.chainId in FinalizationRequest.requests_to_be_confirmed.keys():
-            FinalizationRequest.requests_to_be_confirmed[self.chainId][self.blockHeight] = self
-        else:
-            d = dict()
-            d[self.blockHeight] = self
-            FinalizationRequest.requests_to_be_confirmed[self.chainId] = d
+        if self.chainId not in FinalizationRequest.requests_to_be_confirmed:
+            FinalizationRequest.requests_to_be_confirmed[self.chainId] = dict()
+        reqs_for_chain = FinalizationRequest.requests_to_be_confirmed[self.chainId]
+        if self.blockHeight in reqs_for_chain:
+            return False
+        reqs_for_chain[self.blockHeight] = self
+        return True
 
     def waiting_for_confirm(self):
         if self.chainId in FinalizationRequest.requests_to_be_confirmed.keys():
