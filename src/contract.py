@@ -130,7 +130,7 @@ class ProofChainContract:
         predicted_tx_hash = eth_hash.auto.keccak(signed_txn.rawTransaction)
 
         self.logger.info(
-            f"sending a tx to finalize {chainId}/{blockHeight}"
+            f"Sending finalization tx {chainId}/{blockHeight}"
             f" senderBalance={balance_before_send_glmr}GLMR"
             f" senderNonce={self.nonce}"
             f" txHash=0x{predicted_tx_hash.hex()}"
@@ -152,7 +152,7 @@ class ProofChainContract:
             match (jsonrpc_err['code'], jsonrpc_err['message']):
                 case (-32603, 'nonce too low'):
                     self.report_transaction_bounce(predicted_tx_hash, err="nonce too low", details={"txNonce": self.nonce})
-                    self.logger.info("pausing to allow pending txs to clear, then refreshing nonce...")
+                    self.logger.info("Pausing to allow pending txs to clear, then refreshing nonce...")
                     time.sleep(60)
                     self._refresh_nonce()
 
@@ -163,7 +163,7 @@ class ProofChainContract:
 
     def report_transaction_bounce(self, predicted_tx_hash, err, details):
         bounce = LoggableBounce(predicted_tx_hash, err=err, details=details)
-        self.logger.error(f"tx bounced with {bounce}")
+        self.logger.error(f"TX bounced with {bounce}")
 
     def report_transaction_receipt(self, tx_hash, timeout=None, **kwargs):
         if timeout is None:
@@ -175,9 +175,9 @@ class ProofChainContract:
 
             if receipt.succeeded():
                 self.nonce += 1
-                self.logger.info(f"tx mined with {receipt}")
+                self.logger.info(f"TX mined with {receipt}")
             else:
-                self.logger.warning(f"tx failed with {receipt}")
+                self.logger.warning(f"TX failed with {receipt}")
 
             return (True, None)
 
@@ -188,7 +188,7 @@ class ProofChainContract:
 
     def _refresh_nonce(self):
         self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address)
-        self.logger.info(f"refreshed nonce; new nonce is {self.nonce}")
+        self.logger.info(f"Refreshed nonce newNonce={self.nonce}")
 
     def block_number(self):
         return self._retry_with_backoff(self._attempt_block_number)

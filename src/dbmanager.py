@@ -48,11 +48,13 @@ class DBManager(threading.Thread):
                         self._update_cursor(fr.session_started_block_id)
                         c += 1
         if fl > 0:
-            self.logger.info("{} entries were added for finalizing.".format(fl))
+            self.logger.info(f"Queued {fl} proof-sessions for finalization")
         if c > 0:
-            self.logger.info("{} entries were confirmed.".format(c))
+            self.logger.info(f"Confirmed {c} proof-sessions")
         if self.last_block_id > prev_last_block_id:
-            self.logger.info(f"updated cursor position: block_id={self.last_block_id}")
+            self.logger.info(f"Updated cursor position block_id={self.last_block_id}")
+
+        return fl + c
 
     def __connect(self):
         return psycopg2.connect(
@@ -64,10 +66,10 @@ class DBManager(threading.Thread):
 
     def __main_loop(self):
         try:
+            self.logger.info('Connecting to the database...')
             with self.__connect() as conn:
-                self.logger.info('Connecting to the database...')
                 if not self.caught_up:
-                    self.logger.info("Started catching up with db.")
+                    self.logger.info(f"Initial scan block_id={self.last_block_id}")
 
                     with conn.cursor() as cur:
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
@@ -77,26 +79,23 @@ class DBManager(threading.Thread):
 
                         outputs = cur.fetchall()
 
-                    self.logger.info("Processing {} records from db.".format(len(outputs)))
+                    self.logger.info(f"Processing {len(outputs)} proof-session records...")
                     self._process_outputs(outputs)
 
                     self.caught_up = True
-                    self.logger.info("Caught up with db.")
+                    self.logger.info(f"Caught up with db block_id={self.last_block_id}")
 
                 while True:
                     with conn.cursor() as cur:
-                        self.logger.info("attempting to get more data from {}".format(self.last_block_id))
+                        self.logger.info(f"Incremental scan block_id={self.last_block_id}")
                         # we need everything after last max block number
                         cur.execute(
                             r'SELECT * FROM reports.proof_chain_moonbeam WHERE observer_chain_session_start_block_id > %s;',
                                     (self.last_block_id,))
                         outputs = cur.fetchall()
 
-                    if len(outputs) > 0:
-                        self.logger.info("Processing {} records from db.".format(len(outputs)))
-                        self._process_outputs(outputs)
-                    else:
-                        self.logger.info("No new records discovered in db.")
+                    if self._process_outputs(outputs) == 0:
+                        self.logger.info("No new proof-session records discovered")
 
                     time.sleep(40)
 
@@ -120,14 +119,13 @@ class DBManager(threading.Thread):
 
     def __fetch_last_block(self):
         try:
-            self.logger.info("Determining last finalized block from db...")
+            self.logger.info("Determining initial cursor position...")
             with self.__connect() as conn:
                 with conn.cursor() as cur:
                     cur.execute(r'SELECT observer_chain_session_start_block_id FROM reports.proof_chain_moonbeam WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1')
                     block_id = cur.fetchone()
             if block_id is not None:
                 self.last_block_id = block_id[0] - 1
-                self.logger.info(f"starting from block id {self.last_block_id}")
             else:
                 self.last_block_id = 1
         except Exception as ex:
