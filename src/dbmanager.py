@@ -67,10 +67,10 @@ class DBManager(threading.Thread):
     def __main_loop(self):
         try:
             self.logger.info('Connecting to the database...')
-            with self.__connect() as conn:
-                if not self.caught_up:
-                    self.logger.info(f"Initial scan block_id={self.last_block_id}")
+            if not self.caught_up:
+                self.logger.info(f"Initial scan block_id={self.last_block_id}")
 
+                with self.__connect() as conn:
                     with conn.cursor() as cur:
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
                         cur.execute(
@@ -79,13 +79,14 @@ class DBManager(threading.Thread):
 
                         outputs = cur.fetchall()
 
-                    self.logger.info(f"Processing {len(outputs)} proof-session records...")
-                    self._process_outputs(outputs)
+                self.logger.info(f"Processing {len(outputs)} proof-session records...")
+                self._process_outputs(outputs)
 
-                    self.caught_up = True
-                    self.logger.info(f"Caught up with db block_id={self.last_block_id}")
+                self.caught_up = True
+                self.logger.info(f"Caught up with db block_id={self.last_block_id}")
 
-                while True:
+            while True:
+                with self.__connect() as conn:
                     with conn.cursor() as cur:
                         self.logger.info(f"Incremental scan block_id={self.last_block_id}")
                         # we need everything after last max block number
@@ -94,10 +95,10 @@ class DBManager(threading.Thread):
                                     (self.last_block_id,))
                         outputs = cur.fetchall()
 
-                    if self._process_outputs(outputs) == 0:
-                        self.logger.info("No new proof-session records discovered")
+                if self._process_outputs(outputs) == 0:
+                    self.logger.info("No new proof-session records discovered")
 
-                    time.sleep(40)
+                time.sleep(40)
 
         except (Exception, psycopg2.DatabaseError) as ex:
             self.logger.critical(''.join(traceback.format_exception(ex)))
