@@ -150,7 +150,7 @@ class ProofChainContract:
                 raise
 
             match (jsonrpc_err['code'], jsonrpc_err['message']):
-                case (-32603, 'nonce too low'):
+                case (_, 'nonce too low'):
                     self.report_transaction_bounce(predicted_tx_hash, err="nonce too low", details={"txNonce": self.nonce})
                     self.logger.info("Pausing to allow pending txs to clear, then refreshing nonce...")
                     time.sleep(60)
@@ -187,7 +187,7 @@ class ProofChainContract:
             return (False, 0)
 
     def _refresh_nonce(self):
-        self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address) + 1
+        self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address)
         self.logger.info(f"Refreshed nonce newNonce={self.nonce}")
 
     def block_number(self):
