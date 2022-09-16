@@ -74,8 +74,7 @@ class DBManager(threading.Thread):
                 with self.__connect() as conn:
                     with conn.cursor() as cur:
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
-                        print(self.chain_table)
-                        if self.chain_table == "covint": 
+                        if self.chain_table == "chain_covint1":
                             cur.execute(
                             r'SELECT * FROM reports.proof_chain_covint1 WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
                                     (self.last_block_id,))
