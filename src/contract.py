@@ -187,7 +187,7 @@ class ProofChainContract:
             return (False, 0)
 
     def _refresh_nonce(self):
-        self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address)
+        self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address) + 1
         self.logger.info(f"Refreshed nonce newNonce={self.nonce}")
 
     def block_number(self):
