@@ -15,13 +15,14 @@ class DBManager(threading.Thread):
     starting_point: int
     logger: logging.Logger
 
-    def __init__(self, user, password, database, host, starting_point):
+    def __init__(self, user, password, database, host, starting_point, chain_table):
         super().__init__()
         self.host = host
         self.database = database
         self.password = password
         self.user = user
         self.last_block_id = None
+        self.chain_table = chain_table
 
         self.logger = logformat.get_logger("DB")
         self.starting_point = starting_point
@@ -73,7 +74,13 @@ class DBManager(threading.Thread):
                 with self.__connect() as conn:
                     with conn.cursor() as cur:
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
-                        cur.execute(
+                        print(self.chain_table)
+                        if self.chain_table == "covint": 
+                            cur.execute(
+                            r'SELECT * FROM reports.proof_chain_covint1 WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
+                                    (self.last_block_id,))
+                        else: 
+                            cur.execute(
                             r'SELECT * FROM reports.proof_chain_moonbeam WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
                                     (self.last_block_id,))
 
