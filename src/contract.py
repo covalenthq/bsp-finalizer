@@ -110,7 +110,7 @@ class ProofChainContract:
     def send_finalize(self, **kwargs):
         return self._retry_with_backoff(self._attempt_send_finalize, **kwargs)
 
-    def _attempt_send_finalize(self, chainId, blockHeight, timeout=None):
+    def _attempt_send_finalize(self, chainId, blockHeight, timeout):
         if self.nonce is None:
             self._refresh_nonce()
 
@@ -135,7 +135,6 @@ class ProofChainContract:
             f" senderNonce={self.nonce}"
             f" txHash=0x{predicted_tx_hash.hex()}"
         )
-
         tx_hash = None
         err = None
         try:
@@ -165,17 +164,18 @@ class ProofChainContract:
         bounce = LoggableBounce(predicted_tx_hash, err=err, details=details)
         self.logger.error(f"TX bounced with {bounce}")
 
-    def report_transaction_receipt(self, tx_hash, timeout=None, **kwargs):
+    def report_transaction_receipt(self, tx_hash, timeout, **kwargs):
+
         if timeout is None:
             return (True, None)
 
         try:
-            self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=timeout, poll_latency=1.0)
-            receipt = LoggableReceipt(self.w3.eth.get_transaction_receipt(tx_hash), **kwargs)
+            receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=timeout, poll_latency=1.0)
+            # receipt = LoggableReceipt(self.w3.eth.get_transaction_receipt(tx_hash), **kwargs)
 
-            if receipt.succeeded():
+            if receipt:
                 self.nonce += 1
-                self.logger.info(f"TX mined with {receipt}")
+                self.logger.info(f"TX mined with {receipt['transactionHash'].hex()} in block {receipt.blockNumber}")
             else:
                 self.logger.warning(f"TX failed with {receipt}")
 
