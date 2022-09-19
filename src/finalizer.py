@@ -74,7 +74,7 @@ class Finalizer(threading.Thread):
                 self._attempt_to_finalize(fr)
                 i += 1
             to_send = to_send[1000:]
-            self.logger.info("Refinalized {num_to_send - len(to_send)} proof-sessions")
+            self.logger.info(f"Refinalized {num_to_send - len(to_send)} proof-sessions")
 
     def _attempt_to_finalize(self, fr):
         try:
