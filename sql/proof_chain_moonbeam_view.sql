@@ -7,8 +7,8 @@ session_started_events AS (
     session_started.topics[2]::numeric AS origin_chain_id,
     session_started.topics[3]::numeric AS origin_chain_block_height,
     abi_field(session_started.data, 0)::numeric AS proof_session_deadline
-  FROM $CHAIN_TABLE_NAME.block_log_events session_started
-  JOIN $CHAIN_TABLE_NAME.block_transactions trx
+  FROM %CHAIN_TABLE_NAME%.block_log_events session_started
+  JOIN %CHAIN_TABLE_NAME%.block_transactions trx
     ON (trx.block_id = session_started.block_id AND trx.tx_offset = session_started.tx_offset)
   WHERE
     session_started.sender = '\x4f2e285227d43d9eb52799d0a28299540452446e'::bytea
@@ -23,8 +23,8 @@ block_specimen_reward_awarded_events AS (
     fin.tx_hash AS observer_chain_tx_hash,
     fin.topics[2]::numeric AS origin_chain_id, 
     fin.topics[3]::numeric AS origin_chain_block_height
-  FROM $CHAIN_TABLE_NAME.block_log_events fin
-  JOIN $CHAIN_TABLE_NAME.block_transactions trx_1
+  FROM %CHAIN_TABLE_NAME%.block_log_events fin
+  JOIN %CHAIN_TABLE_NAME%.block_transactions trx_1
     ON (trx_1.block_id = fin.block_id AND trx_1.tx_offset = fin.tx_offset)
   WHERE
     fin.sender = '\x4f2e285227d43d9eb52799d0a28299540452446e'::bytea
@@ -37,8 +37,8 @@ quorum_not_reached_events AS (
     fin.tx_hash AS observer_chain_tx_hash,
     fin.topics[2]::numeric AS origin_chain_id,
     public.abi_field(fin.data, 0)::numeric AS origin_chain_block_height
-  FROM $CHAIN_TABLE_NAME.block_log_events fin
-  JOIN $CHAIN_TABLE_NAME.block_transactions trx_1
+  FROM %CHAIN_TABLE_NAME%.block_log_events fin
+  JOIN %CHAIN_TABLE_NAME%.block_transactions trx_1
     ON (trx_1.block_id = fin.block_id AND trx_1.tx_offset = fin.tx_offset)
   WHERE
     fin.sender = '\x4f2e285227d43d9eb52799d0a28299540452446e'::bytea

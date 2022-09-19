@@ -173,7 +173,7 @@ class ProofChainContract:
             receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=timeout, poll_latency=1.0)
             # receipt = LoggableReceipt(self.w3.eth.get_transaction_receipt(tx_hash), **kwargs)
 
-            if receipt:
+            if receipt.status != 1:
                 self.nonce += 1
                 self.logger.info(f"TX mined with {receipt['transactionHash'].hex()} in block {receipt.blockNumber}")
             else:
