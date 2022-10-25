@@ -11,7 +11,7 @@ session_started_events AS (
   JOIN chain_moonbeam_moonbase_alpha.block_transactions trx
     ON (trx.block_id = session_started.block_id AND trx.tx_offset = session_started.tx_offset)
   WHERE
-    session_started.sender = '\x0x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
+    session_started.sender = '\x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
     AND session_started.topics @> ARRAY[
       '\x8b1f889addbfa41db5227bae3b091bd5c8b9a9122f874dfe54ba2f75aabe1f4c'::bytea
     ]
@@ -27,7 +27,7 @@ block_specimen_reward_awarded_events AS (
   JOIN chain_moonbeam_moonbase_alpha.block_transactions trx_1
     ON (trx_1.block_id = fin.block_id AND trx_1.tx_offset = fin.tx_offset)
   WHERE
-    fin.sender = '\x0x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
+    fin.sender = '\x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
     AND fin.topics @> ARRAY['\xf05ac779af1ec75a7b2fbe9415b33a67c00294a121786f7ce2eb3f92e4a6424a'::bytea]
     AND trx_1.successful = TRUE
   ORDER BY fin.block_id ASC, fin.log_offset ASC
@@ -41,7 +41,7 @@ quorum_not_reached_events AS (
   JOIN chain_moonbeam_moonbase_alpha.block_transactions trx_1
     ON (trx_1.block_id = fin.block_id AND trx_1.tx_offset = fin.tx_offset)
   WHERE
-    fin.sender = '\x0x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
+    fin.sender = '\x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
     AND fin.topics @> ARRAY['\x398fd8f638a7242217f011fd0720a06747f7a85b7d28d7276684b841baea4021'::bytea]
     AND trx_1.successful = TRUE
   ORDER BY fin.block_id ASC, fin.log_offset ASC
