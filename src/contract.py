@@ -14,6 +14,7 @@ import logformat
 
 MODULE_ROOT_PATH = pathlib.Path(__file__).parent.parent.resolve()
 
+
 class LoggableReceipt():
     def __init__(self, fields, fail_reason=None):
         self.blockNumber = fields['blockNumber']
@@ -31,6 +32,7 @@ class LoggableReceipt():
             f" includedAs={self.blockNumber}/{self.txIndex}"
             f" spentGas={self.gasUsed}"
         )
+
 
 class LoggableBounce():
     def __init__(self, tx_hash, err, details=None):
@@ -116,11 +118,11 @@ class ProofChainContract:
         transaction = self.contract.functions.finalizeAndRewardSpecimenSession(
             chainId,
             blockHeight).buildTransaction({
-            'gas': self.gas,
-            'gasPrice': self.gasPrice,
-            'from': self.finalizer_address,
-            'nonce': self.nonce
-        })
+                'gas': self.gas,
+                'gasPrice': self.gasPrice,
+                'from': self.finalizer_address,
+                'nonce': self.nonce
+            })
         signed_txn = self.w3.eth.account.signTransaction(transaction, private_key=self.finalizer_prvkey)
 
         balance_before_send_wei = self.w3.eth.get_balance(self.finalizer_address)
@@ -212,14 +214,14 @@ class ProofChainContract:
         gases = []
         print(pending_transactions)
         for tx in pending_transactions["result"[:10]]:
-            gas_prices.append(int((tx["gasPrice"]),16))
-            gases.append(int((tx["gas"]),16))
+            gas_prices.append(int((tx["gasPrice"]), 16))
+            gases.append(int((tx["gas"]), 16))
         print("Average:")
-        print("-"*80)
+        print("-" * 80)
         print("gasPrice: ", statistics.mean(gas_prices))
         print(" ")
         print("Median:")
-        print("-"*80)
+        print("-" * 80)
         print("gasPrice: ", statistics.median(gas_prices))
 
     def increase_gas_price(self):

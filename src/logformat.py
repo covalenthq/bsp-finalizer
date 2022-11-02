@@ -2,6 +2,7 @@ import logging
 import sys
 import functools
 
+
 class LogFormat(logging.Formatter):
     ANSI_RESET = "\x1b[0m"
     ANSI_BOLD = "\x1b[1m"
@@ -22,9 +23,11 @@ class LogFormat(logging.Formatter):
         formatter = self.FORMATTERS.get(record.levelno)
         return formatter.format(record)
 
+
 @functools.cache
 def get_logger(class_name):
     return _build_logger(class_name)
+
 
 def _build_logger(class_name):
     logger = logging.getLogger(class_name)

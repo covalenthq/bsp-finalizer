@@ -39,7 +39,6 @@ class Finalizer(threading.Thread):
             else:
                 open_session_count += 1
 
-
         if len(ready_to_finalize) == 0:
             self.logger.debug(f"Nothing ready to finalize height={self.observer_chain_block_height} openSessions={open_session_count}")
             return
