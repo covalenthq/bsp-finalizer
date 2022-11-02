@@ -2,8 +2,8 @@ import time
 
 
 class FinalizationRequest:
-    requests_to_be_finalized = dict()
-    requests_to_be_confirmed = dict()
+    requests_to_be_finalized = {}
+    requests_to_be_confirmed = {}
 
     @staticmethod
     def get_requests_to_be_finalized() -> []:
@@ -27,7 +27,7 @@ class FinalizationRequest:
         self.deadline = deadline
         self.chainId = chainId
         self.blockHeight = blockHeight
-        self.session_started_block_id = block_id
+        self.block_id = block_id
         self.finalized_time = None
 
     def update_block_id(self, bid):
@@ -47,7 +47,7 @@ class FinalizationRequest:
 
     def finalize_later(self):
         if self.chainId not in FinalizationRequest.requests_to_be_finalized:
-            FinalizationRequest.requests_to_be_finalized[self.chainId] = dict()
+            FinalizationRequest.requests_to_be_finalized[self.chainId] = {}
         reqs_for_chain = FinalizationRequest.requests_to_be_finalized[self.chainId]
         if self.blockHeight in reqs_for_chain:
             return False
@@ -56,7 +56,7 @@ class FinalizationRequest:
 
     def confirm_later(self):
         if self.chainId not in FinalizationRequest.requests_to_be_confirmed:
-            FinalizationRequest.requests_to_be_confirmed[self.chainId] = dict()
+            FinalizationRequest.requests_to_be_confirmed[self.chainId] = {}
         reqs_for_chain = FinalizationRequest.requests_to_be_confirmed[self.chainId]
         if self.blockHeight in reqs_for_chain:
             return False
@@ -64,11 +64,11 @@ class FinalizationRequest:
         return True
 
     def waiting_for_confirm(self):
-        if self.chainId not in FinalizationRequest.requests_to_be_confirmed.keys():
+        if self.chainId not in FinalizationRequest.requests_to_be_confirmed:
             return False
         return self.blockHeight in FinalizationRequest.requests_to_be_confirmed[self.chainId]
 
     def waiting_for_finalize(self):
-        if self.chainId not in FinalizationRequest.requests_to_be_finalized.keys():
+        if self.chainId not in FinalizationRequest.requests_to_be_finalized:
             return False
         return self.blockHeight in FinalizationRequest.requests_to_be_finalized[self.chainId]

@@ -2,9 +2,8 @@ import logging
 import threading
 import time
 import traceback
-import logformat
-
 import psycopg2
+import logformat
 
 from finalizationrequest import FinalizationRequest
 

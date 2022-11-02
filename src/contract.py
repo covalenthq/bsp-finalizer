@@ -2,15 +2,14 @@ import statistics
 import traceback
 import random
 import time
+import os
+import pathlib
 
+from web3 import Web3
 from web3.exceptions import TimeExhausted
 from web3.middleware import geth_poa_middleware
 import web3.auto
 import eth_hash.auto
-import os
-from web3 import Web3
-import pathlib
-
 import logformat
 
 MODULE_ROOT_PATH = pathlib.Path(__file__).parent.parent.resolve()
@@ -34,7 +33,7 @@ class LoggableReceipt():
         )
 
 class LoggableBounce():
-    def __init__(self, tx_hash, err, details={}):
+    def __init__(self, tx_hash, err, details=None):
         self.txHash = tx_hash.hex()
         self.err = err
         self.details = details
@@ -137,12 +136,11 @@ class ProofChainContract:
         )
 
         tx_hash = None
-        err = None
         try:
             tx_hash = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
             return self.report_transaction_receipt(tx_hash, timeout)
         except ValueError as ex:
-            if len(ex.args) != 1 or type(ex.args[0]) != dict:
+            if len(ex.args) != 1 or isinstance(ex.args[0]) != dict:
                 raise
 
             jsonrpc_err = ex.args[0]
@@ -181,7 +179,7 @@ class ProofChainContract:
 
             return (True, None)
 
-        except TimeExhausted as ex:
+        except TimeExhausted:
             self.increase_gas_price()
             # retry immediately
             return (False, 0)
