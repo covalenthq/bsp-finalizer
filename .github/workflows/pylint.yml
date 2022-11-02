@@ -15,20 +15,23 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
+        
     - name: Install dependencies
       run: |        
         python -m pip install --upgrade pip
         pip install pylint
         pip install pipenv
         pipenv  --python '3.10' install --dev
+
     - name: Analysing the code with pylint
       run: |
         pipenv run pylint --rcfile=.pylintrc src/*.py
 
-    # - name: Analysing the code with pycodestyle
-    #   run: |
-    #     pip install pycodestyle
-    #     pipenv run  pycodestyle core/views.py core/views_platform.py core/views_classc.py core/views_clickhouse.py core/models.py
+    - name: Analysing the code with pycodestyle
+      run: |
+        pip install pycodestyle
+        pipenv run  pycodestyle src/*.py
+
     # - name: Analysing the code with black
     #   run: |
     #     pipenv install --skip-lock "black==22.3.0"
