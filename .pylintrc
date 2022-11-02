@@ -162,7 +162,12 @@ disable=raw-checker-failed,
         invalid-name,
         consider-using-f-string,
         broad-except,
-        no-member
+        no-member,
+        too-many-arguments,
+        too-few-public-methods,
+        too-many-instance-attributes,
+        logging-fstring-interpolation,
+        inconsistent-return-statements
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
