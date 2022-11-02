@@ -1,7 +1,5 @@
 import logging
-import os
 import sys
-import pathlib
 import functools
 
 class LogFormat(logging.Formatter):
