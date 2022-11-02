@@ -140,7 +140,7 @@ class ProofChainContract:
             tx_hash = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
             return self.report_transaction_receipt(tx_hash, timeout)
         except ValueError as ex:
-            if len(ex.args) != 1 or isinstance(ex.args[0]) != dict:
+            if len(ex.args) != 1 or type(ex.args[0]) != dict:
                 raise
 
             jsonrpc_err = ex.args[0]
