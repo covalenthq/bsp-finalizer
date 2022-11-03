@@ -21,8 +21,7 @@ class Finalizer(threading.Thread):
                 if bn > self.observer_chain_block_height:
                     self.observer_chain_block_height = bn
                     return
-                else:
-                    time.sleep(4.0)
+                time.sleep(4.0)
             except Exception as ex:
                 self.logger.critical(''.join(traceback.format_exception(ex)))
                 time.sleep(4.0)
@@ -40,7 +39,6 @@ class Finalizer(threading.Thread):
             else:
                 open_session_count += 1
 
-
         if len(ready_to_finalize) == 0:
             self.logger.debug(f"Nothing ready to finalize height={self.observer_chain_block_height} openSessions={open_session_count}")
             return
@@ -55,7 +53,7 @@ class Finalizer(threading.Thread):
         while True:
             try:
                 self.__main_loop()
-            except:
+            except RecursionError:
                 # this should never happen
                 pass
 
@@ -83,4 +81,3 @@ class Finalizer(threading.Thread):
             fr.confirm_later()
         except Exception as ex:
             self.logger.critical(''.join(traceback.format_exception(ex)))
-
