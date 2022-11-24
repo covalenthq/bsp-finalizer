@@ -25,6 +25,7 @@ if __name__ == "__main__":
     DB_PASSWORD = os.getenv("DB_PASSWORD")
     DB_HOST = os.getenv("DB_HOST")
     DB_DATABASE = os.getenv("DB_DATABASE")
+    DB_SCHEMA = os.getenv("DB_SCHEMA")
 
     logging.basicConfig(
         stream=sys.stdout,
@@ -38,11 +39,13 @@ if __name__ == "__main__":
         finalizer_address=FINALIZER_ADDRESS
     )
     dbm = DBManager(
+        proofchain_address=PROOFCHAIN_ADDRESS,
         starting_point=int(BLOCK_ID_START),
         user=DB_USER,
         password=DB_PASSWORD,
         database=DB_DATABASE,
-        host=DB_HOST
+        host=DB_HOST,
+        schema=DB_SCHEMA
     )
     dbm.daemon = True
 
