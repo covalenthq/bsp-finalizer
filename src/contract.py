@@ -158,6 +158,12 @@ class ProofChainContract:
 
                     # retry immediately (we already waited)
                     return (False, 0)
+                case (-32603, 'Session cannot be finalized'):
+                    self.logger.info("Skipping session that cannot be finalized...")
+                    return (True, None)
+                case (-32603, 'already known'):
+                    self.logger.info("Skipping finalization tx that's already known...")
+                    return (True, None)
                 case _:
                     raise
 
