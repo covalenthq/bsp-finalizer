@@ -74,7 +74,7 @@ class DBManager(threading.Thread):
                     with conn.cursor() as cur:
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
                         cur.execute(
-                            r'SELECT * FROM reports.proof_chain_moonbase_alpha WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
+                            r'SELECT * FROM chain_moonbeam_moonbase_alpha._proof_chain_events WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
                                     (self.last_block_id,))
 
                         outputs = cur.fetchall()
@@ -91,7 +91,7 @@ class DBManager(threading.Thread):
                         self.logger.info(f"Incremental scan block_id={self.last_block_id}")
                         # we need everything after last max block number
                         cur.execute(
-                            r'SELECT * FROM reports.proof_chain_moonbase_alpha WHERE observer_chain_session_start_block_id > %s;',
+                            r'SELECT * FROM chain_moonbeam_moonbase_alpha._proof_chain_events WHERE observer_chain_session_start_block_id > %s;',
                                     (self.last_block_id,))
                         outputs = cur.fetchall()
 
@@ -123,7 +123,7 @@ class DBManager(threading.Thread):
             self.logger.info("Determining initial cursor position...")
             with self.__connect() as conn:
                 with conn.cursor() as cur:
-                    cur.execute(r'SELECT observer_chain_session_start_block_id FROM reports.proof_chain_moonbase_alpha WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1')
+                    cur.execute(r'SELECT observer_chain_session_start_block_id FROM chain_moonbeam_moonbase_alpha._proof_chain_events WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1')
                     block_id = cur.fetchone()
             if block_id is not None:
                 self.last_block_id = block_id[0] - 1
