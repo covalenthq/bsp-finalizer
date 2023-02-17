@@ -113,7 +113,8 @@ class ProofChainContract:
     def _attempt_send_finalize(self, chainId, blockHeight, timeout=None):
         if self.nonce is None:
             self._refresh_nonce()
-
+        self.gasPrice = self.w3.eth.gasPrice
+        self.logger.info(f"TX dynamic gas price is {self.gasPrice}")
         transaction = self.contract.functions.finalizeAndRewardSpecimenSession(
             chainId,
             blockHeight).buildTransaction({
@@ -122,6 +123,7 @@ class ProofChainContract:
             'from': self.finalizer_address,
             'nonce': self.nonce
         })
+        
         signed_txn = self.w3.eth.account.signTransaction(transaction, private_key=self.finalizer_prvkey)
 
         balance_before_send_wei = self.w3.eth.get_balance(self.finalizer_address)
