@@ -2,9 +2,8 @@ import logging
 import threading
 import time
 import traceback
-import logformat
-
 import psycopg2
+import logformat
 
 from finalizationrequest import FinalizationRequest
 
@@ -74,8 +73,13 @@ class DBManager(threading.Thread):
                     with conn.cursor() as cur:
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
                         cur.execute(
+<<<<<<< HEAD
                             r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 16650720;',
                                     (self.last_block_id,))
+=======
+                            r'SELECT * FROM reports.proof_chain_moonbeam WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
+                            (self.last_block_id,))
+>>>>>>> 4e125f7154fb2a6187774722bd59cb27337fb427
 
                         outputs = cur.fetchall()
 
@@ -91,8 +95,13 @@ class DBManager(threading.Thread):
                         self.logger.info(f"Incremental scan block_id={self.last_block_id}")
                         # we need everything after last max block number
                         cur.execute(
+<<<<<<< HEAD
                             r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 16650720;',
                                     (self.last_block_id,))
+=======
+                            r'SELECT * FROM reports.proof_chain_moonbeam WHERE observer_chain_session_start_block_id > %s;',
+                            (self.last_block_id,))
+>>>>>>> 4e125f7154fb2a6187774722bd59cb27337fb427
                         outputs = cur.fetchall()
 
                 if self._process_outputs(outputs) == 0:
