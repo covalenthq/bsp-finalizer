@@ -2,9 +2,8 @@ import logging
 import threading
 import time
 import traceback
-import logformat
-
 import psycopg2
+import logformat
 
 from finalizationrequest import FinalizationRequest
 
@@ -81,7 +80,7 @@ class DBManager(threading.Thread):
                         else: 
                             cur.execute(
                             r'SELECT * FROM reports.proof_chain_moonbeam WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
-                                    (self.last_block_id,))
+                            (self.last_block_id,))
 
                         outputs = cur.fetchall()
 
@@ -98,7 +97,7 @@ class DBManager(threading.Thread):
                         # we need everything after last max block number
                         cur.execute(
                             r'SELECT * FROM reports.proof_chain_moonbeam WHERE observer_chain_session_start_block_id > %s;',
-                                    (self.last_block_id,))
+                            (self.last_block_id,))
                         outputs = cur.fetchall()
 
                 if self._process_outputs(outputs) == 0:
