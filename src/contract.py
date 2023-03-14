@@ -189,11 +189,9 @@ class ProofChainContract:
                 self.w3.eth.get_transaction_receipt(tx_hash), **kwargs
             )
 
-            if receipt.status != 1:
+            if receipt.succeeded():
                 self.nonce += 1
-                self.logger.info(
-                    f"TX mined with {receipt['transactionHash'].hex()} in block {receipt.blockNumber}"
-                )
+                self.logger.info(f"TX mined with {receipt}")
             else:
                 self.logger.warning(f"TX failed with {receipt}")
 
