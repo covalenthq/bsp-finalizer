@@ -2,18 +2,18 @@ import statistics
 import traceback
 import random
 import time
+import os
+import pathlib
 
+from web3 import Web3
 from web3.exceptions import TimeExhausted
 from web3.middleware import geth_poa_middleware
 import web3.auto
 import eth_hash.auto
-import os
-from web3 import Web3
-import pathlib
-
 import logformat
 
 MODULE_ROOT_PATH = pathlib.Path(__file__).parent.parent.resolve()
+
 
 class LoggableReceipt():
     def __init__(self, fields, fail_reason=None):
@@ -33,8 +33,9 @@ class LoggableReceipt():
             f" spentGas={self.gasUsed}"
         )
 
+
 class LoggableBounce():
-    def __init__(self, tx_hash, err, details={}):
+    def __init__(self, tx_hash, err, details=None):
         self.txHash = tx_hash.hex()
         self.err = err
         self.details = details
@@ -117,11 +118,11 @@ class ProofChainContract:
         transaction = self.contract.functions.finalizeAndRewardSpecimenSession(
             chainId,
             blockHeight).buildTransaction({
-            'gas': self.gas,
-            'gasPrice': self.gasPrice,
-            'from': self.finalizer_address,
-            'nonce': self.nonce
-        })
+                'gas': self.gas,
+                'gasPrice': self.gasPrice,
+                'from': self.finalizer_address,
+                'nonce': self.nonce
+            })
         signed_txn = self.w3.eth.account.signTransaction(transaction, private_key=self.finalizer_prvkey)
 
         balance_before_send_wei = self.w3.eth.get_balance(self.finalizer_address)
@@ -136,7 +137,6 @@ class ProofChainContract:
             f" txHash=0x{predicted_tx_hash.hex()}"
         )
         tx_hash = None
-        err = None
         try:
             tx_hash = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
             return self.report_transaction_receipt(tx_hash, timeout)
@@ -181,7 +181,7 @@ class ProofChainContract:
 
             return (True, None)
 
-        except TimeExhausted as ex:
+        except TimeExhausted:
             self.increase_gas_price()
             # retry immediately
             return (False, 0)
@@ -214,14 +214,14 @@ class ProofChainContract:
         gases = []
         print(pending_transactions)
         for tx in pending_transactions["result"[:10]]:
-            gas_prices.append(int((tx["gasPrice"]),16))
-            gases.append(int((tx["gas"]),16))
+            gas_prices.append(int((tx["gasPrice"]), 16))
+            gases.append(int((tx["gas"]), 16))
         print("Average:")
-        print("-"*80)
+        print("-" * 80)
         print("gasPrice: ", statistics.mean(gas_prices))
         print(" ")
         print("Median:")
-        print("-"*80)
+        print("-" * 80)
         print("gasPrice: ", statistics.median(gas_prices))
 
     def increase_gas_price(self):

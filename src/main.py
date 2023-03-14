@@ -1,12 +1,12 @@
 import logging
 import time
 import sys
+import os
 
+from dotenv import load_dotenv
 from contract import ProofChainContract
 from dbmanager import DBManager
 from finalizer import Finalizer
-import os
-from dotenv import load_dotenv
 
 
 def is_any_thread_alive(threads):

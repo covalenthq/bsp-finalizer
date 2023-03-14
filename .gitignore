@@ -153,3 +153,10 @@ fabric.properties
 logs/
 
 last_block_id
+
+.envrc
+.envrc_cqt
+.envrc_moonbeam
+.envrc_moonbase
+
+temp/
