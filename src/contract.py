@@ -110,7 +110,7 @@ class ProofChainContract:
     def send_finalize(self, **kwargs):
         return self._retry_with_backoff(self._attempt_send_finalize, **kwargs)
 
-    def _attempt_send_finalize(self, chainId, blockHeight, timeout=None):
+    def _attempt_send_finalize(self, chainId, blockHeight, timeout):
         if self.nonce is None:
             self._refresh_nonce()
         self.gasPrice = self.w3.eth.gasPrice
