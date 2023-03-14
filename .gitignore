@@ -158,3 +158,5 @@ last_block_id
 .envrc_cqt
 .envrc_moonbeam
 .envrc_moonbase
+
+temp/
