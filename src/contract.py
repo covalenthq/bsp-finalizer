@@ -110,7 +110,7 @@ class ProofChainContract:
     def send_finalize(self, **kwargs):
         return self._retry_with_backoff(self._attempt_send_finalize, **kwargs)
 
-    def _attempt_send_finalize(self, chainId, blockHeight, timeout=None):
+    def _attempt_send_finalize(self, chainId, blockHeight, timeout):
         if self.nonce is None:
             self._refresh_nonce()
         self.gasPrice = self.w3.eth.gasPrice
@@ -177,7 +177,7 @@ class ProofChainContract:
         bounce = LoggableBounce(predicted_tx_hash, err=err, details=details)
         self.logger.error(f"TX bounced with {bounce}")
 
-    def report_transaction_receipt(self, tx_hash, timeout=None, **kwargs):
+    def report_transaction_receipt(self, tx_hash, timeout, **kwargs):
         if timeout is None:
             return (True, None)
 
