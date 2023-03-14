@@ -73,7 +73,7 @@ class DBManager(threading.Thread):
                     with conn.cursor() as cur:
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
                         cur.execute(
-                            r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 16650720;',
+                            r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 16805810;',
                             (self.last_block_id,))
 
                         outputs = cur.fetchall()
@@ -90,7 +90,7 @@ class DBManager(threading.Thread):
                         self.logger.info(f"Incremental scan block_id={self.last_block_id}")
                         # we need everything after last max block number
                         cur.execute(
-                            r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 16650720;',
+                            r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 16805810;',
                                     (self.last_block_id,))
                         outputs = cur.fetchall()
 
