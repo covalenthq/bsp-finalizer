@@ -83,7 +83,6 @@ class DBManager(threading.Thread):
                         )
 
                         outputs = cur.fetchall()
-
                 self.logger.info(f"Processing {len(outputs)} proof-session records...")
                 self._process_outputs(outputs)
 
