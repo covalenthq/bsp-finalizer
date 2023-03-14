@@ -2,9 +2,12 @@ name: pylint
 
 on:
   push:
-    branches: [main]
+    branches:
+    - "main"
   pull_request:
-    branches: [main]
+    branches: 
+    - "main"
+    - "develop"
       
 jobs:
   build:
