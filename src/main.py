@@ -29,20 +29,20 @@ if __name__ == "__main__":
     logging.basicConfig(
         stream=sys.stdout,
         format="%(levelname)s %(name)s (%(filename)s:%(lineno)d) - %(message)s",
-        level=logging.INFO
+        level=logging.INFO,
     )
     contract = ProofChainContract(
         rpc_endpoint=RPC_ENDPOINT,
         proofchain_address=PROOFCHAIN_ADDRESS,
         finalizer_prvkey=FINALIZER_PRIVATE_KEY,
-        finalizer_address=FINALIZER_ADDRESS
+        finalizer_address=FINALIZER_ADDRESS,
     )
     dbm = DBManager(
         starting_point=int(BLOCK_ID_START),
         user=DB_USER,
         password=DB_PASSWORD,
         database=DB_DATABASE,
-        host=DB_HOST
+        host=DB_HOST,
     )
     dbm.daemon = True
 

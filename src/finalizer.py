@@ -23,7 +23,7 @@ class Finalizer(threading.Thread):
                     return
                 time.sleep(4.0)
             except Exception as ex:
-                self.logger.critical(''.join(traceback.format_exception(ex)))
+                self.logger.critical("".join(traceback.format_exception(ex)))
                 time.sleep(4.0)
 
     def __main_loop(self):
@@ -40,7 +40,9 @@ class Finalizer(threading.Thread):
                 open_session_count += 1
 
         if len(ready_to_finalize) == 0:
-            self.logger.debug(f"Nothing ready to finalize height={self.observer_chain_block_height} openSessions={open_session_count}")
+            self.logger.debug(
+                f"Nothing ready to finalize height={self.observer_chain_block_height} openSessions={open_session_count}"
+            )
             return
 
         self.logger.info(f"Finalizing {len(ready_to_finalize)} proof-sessions...")
@@ -76,8 +78,10 @@ class Finalizer(threading.Thread):
 
     def _attempt_to_finalize(self, fr):
         try:
-            self.contract.send_finalize(chainId=int(fr.chainId), blockHeight=int(fr.blockHeight), timeout=300)
+            self.contract.send_finalize(
+                chainId=int(fr.chainId), blockHeight=int(fr.blockHeight), timeout=300
+            )
             fr.finalize_request()
             fr.confirm_later()
         except Exception as ex:
-            self.logger.critical(''.join(traceback.format_exception(ex)))
+            self.logger.critical("".join(traceback.format_exception(ex)))
