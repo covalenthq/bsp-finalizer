@@ -14,13 +14,14 @@ class DBManager(threading.Thread):
     starting_point: int
     logger: logging.Logger
 
-    def __init__(self, user, password, database, host, starting_point):
+    def __init__(self, user, password, database, host, starting_point, chain_table):
         super().__init__()
         self.host = host
         self.database = database
         self.password = password
         self.user = user
         self.last_block_id = None
+        self.chain_table = chain_table
 
         self.logger = logformat.get_logger("DB")
         self.starting_point = starting_point
@@ -77,11 +78,16 @@ class DBManager(threading.Thread):
                 with self.__connect() as conn:
                     with conn.cursor() as cur:
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
-                        cur.execute(
-                            r"SELECT * FROM reports.proof_chain_moonbeam WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;",
-                            (self.last_block_id,),
-                        )
-
+                        if self.chain_table == "chain_moonbeam_moonbase_alpha":
+                            cur.execute(
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 16805810;',
+                                (self.last_block_id,),
+                            )
+                        else:
+                            cur.execute(
+                                r"SELECT * FROM reports.proof_chain_moonbeam WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;",
+                                (self.last_block_id,),
+                            )
                         outputs = cur.fetchall()
 
                 self.logger.info(f"Processing {len(outputs)} proof-session records...")
@@ -97,10 +103,17 @@ class DBManager(threading.Thread):
                             f"Incremental scan block_id={self.last_block_id}"
                         )
                         # we need everything after last max block number
-                        cur.execute(
-                            r"SELECT * FROM reports.proof_chain_moonbeam WHERE observer_chain_session_start_block_id > %s;",
-                            (self.last_block_id,),
-                        )
+                        if self.chain_table == "chain_moonbeam_moonbase_alpha":
+                            cur.execute(
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 16805810;',
+                                (self.last_block_id,),
+                            )
+                        else:
+                            cur.execute(
+                                r"SELECT * FROM reports.proof_chain_moonbeam WHERE observer_chain_session_start_block_id > %s;",
+                                (self.last_block_id,),
+                            )
+
                         outputs = cur.fetchall()
 
                 if self._process_outputs(outputs) == 0:
@@ -131,9 +144,14 @@ class DBManager(threading.Thread):
             self.logger.info("Determining initial cursor position...")
             with self.__connect() as conn:
                 with conn.cursor() as cur:
-                    cur.execute(
-                        r"SELECT observer_chain_session_start_block_id FROM reports.proof_chain_moonbeam WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1"
-                    )
+                    if self.chain_table == "chain_moonbeam_moonbase_alpha":
+                        cur.execute(
+                            r'SELECT observer_chain_session_start_block_id FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1'
+                        )
+                    else:
+                        cur.execute(
+                            r"SELECT observer_chain_session_start_block_id FROM reports.proof_chain_moonbeam WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1"
+                        )
                     block_id = cur.fetchone()
             if block_id is not None:
                 self.last_block_id = block_id[0] - 1

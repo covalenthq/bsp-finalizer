@@ -25,6 +25,7 @@ if __name__ == "__main__":
     DB_PASSWORD = os.getenv("DB_PASSWORD")
     DB_HOST = os.getenv("DB_HOST")
     DB_DATABASE = os.getenv("DB_DATABASE")
+    CHAIN_TABLE_NAME = os.getenv("CHAIN_TABLE_NAME")
 
     logging.basicConfig(
         stream=sys.stdout,
@@ -43,6 +44,7 @@ if __name__ == "__main__":
         password=DB_PASSWORD,
         database=DB_DATABASE,
         host=DB_HOST,
+        chain_table=CHAIN_TABLE_NAME,
     )
     dbm.daemon = True
 
