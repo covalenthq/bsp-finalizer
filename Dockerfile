@@ -1,8 +1,10 @@
 # set base image (host OS)
-FROM python:3.10.10
+FROM python:3.10-alpine
 
 # set the working directory in the container
 WORKDIR /app
+
+RUN apk update && apk add --no-cache build-base postgresql-dev
 
 # copy the dependencies file to the working directory
 COPY requirements.txt .
