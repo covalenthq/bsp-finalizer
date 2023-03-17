@@ -93,3 +93,11 @@ Pull the images and run (amd64) -
     docker pull gcr.io/covalent-project/bsp-finalizer:latest
     docker run --env-file .env gcr.io/covalent-project/bsp-finalizer:latest
 ```
+
+If the run is successful you should see logs such as below.
+
+```log
+INFO DB (dbmanager.py:74) - Connecting to the database...
+INFO DB (dbmanager.py:76) - Initial scan block_id=1870737934539735450
+DEBUG Finalizer (finalizer.py:43) - Nothing ready to finalize height=3958481 openSessions=0..
+```
