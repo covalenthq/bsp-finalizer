@@ -15,13 +15,13 @@ import logformat
 MODULE_ROOT_PATH = pathlib.Path(__file__).parent.parent.resolve()
 
 
-class LoggableReceipt():
+class LoggableReceipt:
     def __init__(self, fields, fail_reason=None):
-        self.blockNumber = fields['blockNumber']
-        self.gasUsed = fields['gasUsed']
-        self.status = fields['status']
-        self.txHash = fields['transactionHash'].hex()
-        self.txIndex = fields['transactionIndex']
+        self.blockNumber = fields["blockNumber"]
+        self.gasUsed = fields["gasUsed"]
+        self.status = fields["status"]
+        self.txHash = fields["transactionHash"].hex()
+        self.txIndex = fields["transactionIndex"]
 
     def succeeded(self):
         return self.status == 1
@@ -34,24 +34,22 @@ class LoggableReceipt():
         )
 
 
-class LoggableBounce():
+class LoggableBounce:
     def __init__(self, tx_hash, err, details=None):
         self.txHash = tx_hash.hex()
         self.err = err
         self.details = details
 
     def __str__(self):
-        detail_parts = ''.join([f" {k}={v}" for k, v in self.details.items()])
+        detail_parts = "".join([f" {k}={v}" for k, v in self.details.items()])
 
-        return (
-            f"txHash=0x{self.txHash}"
-            f" err={repr(self.err)}"
-            f"{detail_parts}"
-        )
+        return f"txHash=0x{self.txHash}" f" err={repr(self.err)}" f"{detail_parts}"
 
 
 class ProofChainContract:
-    def __init__(self, rpc_endpoint, finalizer_address, finalizer_prvkey, proofchain_address):
+    def __init__(
+        self, rpc_endpoint, finalizer_address, finalizer_prvkey, proofchain_address
+    ):
         self.nonce = None
         self.counter = 0
         self.finalizer_address = finalizer_address
@@ -59,13 +57,12 @@ class ProofChainContract:
         self.provider: Web3.HTTPProvider = Web3.HTTPProvider(rpc_endpoint)
         self.w3: Web3 = Web3(self.provider)
         self.gas = int(os.getenv("GAS_LIMIT"))
-        self.gasPrice = web3.auto.w3.toWei(os.getenv('GAS_PRICE'), 'gwei')
+        self.gasPrice = web3.auto.w3.toWei(os.getenv("GAS_PRICE"), "gwei")
         self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
         self.contractAddress: str = proofchain_address
-        with (MODULE_ROOT_PATH / 'abi' / 'ProofChainContractABI').open('r') as f:
+        with (MODULE_ROOT_PATH / "abi" / "ProofChainContractABI").open("r") as f:
             self.contract = self.w3.eth.contract(
-                address=self.contractAddress,
-                abi=f.read()
+                address=self.contractAddress, abi=f.read()
             )
 
         self.logger = logformat.get_logger("Contract")
@@ -103,7 +100,9 @@ class ProofChainContract:
 
                 ex_desc = "\n".join(traceback.format_exception_only(ex))
                 self.logger.warning(f"exception occurred (will retry): {ex_desc}")
-                sleep_interval = (backoff_in_seconds * (2 ** exp)) + random.uniform(0, 1)
+                sleep_interval = (backoff_in_seconds * (2**exp)) + random.uniform(
+                    0, 1
+                )
                 time.sleep(sleep_interval)
                 retries_left -= 1
                 exp += 1
@@ -111,22 +110,29 @@ class ProofChainContract:
     def send_finalize(self, **kwargs):
         return self._retry_with_backoff(self._attempt_send_finalize, **kwargs)
 
-    def _attempt_send_finalize(self, chainId, blockHeight, timeout=None):
+    def _attempt_send_finalize(self, chainId, blockHeight, timeout):
         if self.nonce is None:
             self._refresh_nonce()
-
+        self.gasPrice = self.w3.eth.gasPrice
+        self.logger.info(f"TX dynamic gas price is {self.gasPrice}")
         transaction = self.contract.functions.finalizeAndRewardSpecimenSession(
-            chainId,
-            blockHeight).buildTransaction({
-                'gas': self.gas,
-                'gasPrice': self.gasPrice,
-                'from': self.finalizer_address,
-                'nonce': self.nonce
-            })
-        signed_txn = self.w3.eth.account.signTransaction(transaction, private_key=self.finalizer_prvkey)
+            chainId, blockHeight
+        ).buildTransaction(
+            {
+                "gas": self.gas,
+                "gasPrice": self.gasPrice,
+                "from": self.finalizer_address,
+                "nonce": self.nonce,
+            }
+        )
+        signed_txn = self.w3.eth.account.signTransaction(
+            transaction, private_key=self.finalizer_prvkey
+        )
 
         balance_before_send_wei = self.w3.eth.get_balance(self.finalizer_address)
-        balance_before_send_glmr = web3.auto.w3.fromWei(balance_before_send_wei, 'ether')
+        balance_before_send_glmr = web3.auto.w3.fromWei(
+            balance_before_send_wei, "ether"
+        )
 
         predicted_tx_hash = eth_hash.auto.keccak(signed_txn.rawTransaction)
 
@@ -146,18 +152,30 @@ class ProofChainContract:
                 raise
 
             jsonrpc_err = ex.args[0]
-            if 'code' not in jsonrpc_err or 'message' not in jsonrpc_err:
+            if "code" not in jsonrpc_err or "message" not in jsonrpc_err:
                 raise
 
-            match (jsonrpc_err['code'], jsonrpc_err['message']):
-                case (-32603, 'nonce too low'):
-                    self.report_transaction_bounce(predicted_tx_hash, err="nonce too low", details={"txNonce": self.nonce})
-                    self.logger.info("Pausing to allow pending txs to clear, then refreshing nonce...")
+            match (jsonrpc_err["code"], jsonrpc_err["message"]):
+                case (-32603, "nonce too low"):
+                    self.report_transaction_bounce(
+                        predicted_tx_hash,
+                        err="nonce too low",
+                        details={"txNonce": self.nonce},
+                    )
+                    self.logger.info(
+                        "Pausing to allow pending txs to clear, then refreshing nonce..."
+                    )
                     time.sleep(60)
                     self._refresh_nonce()
 
                     # retry immediately (we already waited)
                     return (False, 0)
+                case (-32603, "Session cannot be finalized"):
+                    self.logger.info("Skipping session that cannot be finalized...")
+                    return (True, None)
+                case (-32603, "already known"):
+                    self.logger.info("Skipping finalization tx that's already known...")
+                    return (True, None)
                 case _:
                     raise
 
@@ -165,13 +183,17 @@ class ProofChainContract:
         bounce = LoggableBounce(predicted_tx_hash, err=err, details=details)
         self.logger.error(f"TX bounced with {bounce}")
 
-    def report_transaction_receipt(self, tx_hash, timeout=None, **kwargs):
+    def report_transaction_receipt(self, tx_hash, timeout, **kwargs):
         if timeout is None:
             return (True, None)
 
         try:
-            self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=timeout, poll_latency=1.0)
-            receipt = LoggableReceipt(self.w3.eth.get_transaction_receipt(tx_hash), **kwargs)
+            self.w3.eth.wait_for_transaction_receipt(
+                tx_hash, timeout=timeout, poll_latency=1.0
+            )
+            receipt = LoggableReceipt(
+                self.w3.eth.get_transaction_receipt(tx_hash), **kwargs
+            )
 
             if receipt.succeeded():
                 self.nonce += 1
@@ -194,7 +216,7 @@ class ProofChainContract:
         return self._retry_with_backoff(self._attempt_block_number)
 
     def _attempt_block_number(self):
-        return (True, self.w3.eth.get_block('latest').number)
+        return (True, self.w3.eth.get_block("latest").number)
 
     # def subscribe_on_event(self, cb, from_block=1):
     #     event_filter = self.contract.events.SessionStarted.createFilter(fromBlock=from_block)
@@ -209,7 +231,9 @@ class ProofChainContract:
     #         # close loop to free up system resources
     #         loop.close()
     def estimate_gas_price(self):
-        pending_transactions = self.provider.make_request("parity_futureTransactions", [])
+        pending_transactions = self.provider.make_request(
+            "parity_futureTransactions", []
+        )
         gas_prices = []
         gases = []
         print(pending_transactions)

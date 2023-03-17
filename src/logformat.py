@@ -16,7 +16,9 @@ class LogFormat(logging.Formatter):
         logging.INFO: logging.Formatter(FMT_TEMPLATE + ANSI_RESET),
         logging.WARNING: logging.Formatter(ANSI_YELLOW + FMT_TEMPLATE + ANSI_RESET),
         logging.ERROR: logging.Formatter(ANSI_RED + FMT_TEMPLATE + ANSI_RESET),
-        logging.CRITICAL: logging.Formatter(ANSI_BOLD + ANSI_RED + FMT_TEMPLATE + ANSI_RESET)
+        logging.CRITICAL: logging.Formatter(
+            ANSI_BOLD + ANSI_RED + FMT_TEMPLATE + ANSI_RESET
+        ),
     }
 
     def format(self, record):

@@ -11,24 +11,11 @@
       {
         "indexed": false,
         "internalType": "uint64",
-        "name": "newMaxNumberOfHashesPer24H",
+        "name": "threshold",
         "type": "uint64"
       }
     ],
-    "name": "BlockSpecimenMaxNumberOfHashesPer24HChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint128",
-        "name": "newBlockSpecimenMinSubmissionsRequired",
-        "type": "uint128"
-      }
-    ],
-    "name": "BlockSpecimenMinSubmissionRequiredChanged",
+    "name": "BlockHeightSubmissionThresholdChanged",
     "type": "event"
   },
   {
@@ -122,6 +109,50 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "uint64",
+        "name": "chainId",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "blockOnTargetChain",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "blockOnCurrentChain",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "secondsPerBlock",
+        "type": "uint256"
+      }
+    ],
+    "name": "ChainSyncDataChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "version",
+        "type": "uint8"
+      }
+    ],
+    "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "uint256",
         "name": "maxSubmissions",
@@ -161,19 +192,6 @@
       }
     ],
     "name": "NthBlockChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint64",
-        "name": "numberOfBlocks",
-        "type": "uint64"
-      }
-    ],
-    "name": "NumberOfBlocksPer24HChanged",
     "type": "event"
   },
   {
@@ -276,6 +294,19 @@
       }
     ],
     "name": "QuorumNotReached",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint64",
+        "name": "secondsPerBlock",
+        "type": "uint64"
+      }
+    ],
+    "name": "SecondsPerBlockChanged",
     "type": "event"
   },
   {
@@ -429,11 +460,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "governer",
+        "name": "governor",
         "type": "address"
       }
     ],
-    "name": "addGoverner",
+    "name": "addGovernor",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -557,7 +588,7 @@
       },
       {
         "internalType": "address[]",
-        "name": "__governers",
+        "name": "__governors",
         "type": "address[]"
       },
       {
@@ -588,6 +619,50 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "chainId",
+        "type": "uint64"
+      }
+    ],
+    "name": "getChainData",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "blockOnTargetChain",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "blockOnCurrentChain",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "secondsPerBlock",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint128",
+        "name": "allowedThreshold",
+        "type": "uint128"
+      },
+      {
+        "internalType": "uint128",
+        "name": "maxSubmissionsPerBlockHeight",
+        "type": "uint128"
+      },
+      {
+        "internalType": "uint64",
+        "name": "nthBlock",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getMetadata",
     "outputs": [
@@ -595,16 +670,6 @@
         "internalType": "address",
         "name": "stakingInterface",
         "type": "address"
-      },
-      {
-        "internalType": "uint64",
-        "name": "numberOfBlocksPer24H",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint64",
-        "name": "maxSubmissionsPerBlockHeight",
-        "type": "uint64"
       },
       {
         "internalType": "uint128",
@@ -624,6 +689,11 @@
       {
         "internalType": "uint256",
         "name": "blockSpecimenQuorum",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "secondsPerBlock",
         "type": "uint256"
       }
     ],
@@ -681,44 +751,6 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
-    ],
-    "name": "maxNumberOfHashesPer24H",
-    "outputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
-    ],
-    "name": "nthBlock",
-    "outputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
       }
     ],
     "stateMutability": "view",
@@ -786,11 +818,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "governer",
+        "name": "governor",
         "type": "address"
       }
     ],
-    "name": "removeGoverner",
+    "name": "removeGovernor",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -819,11 +851,16 @@
     "inputs": [
       {
         "internalType": "uint64",
-        "name": "minSubmissions",
+        "name": "chainId",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "threshold",
         "type": "uint64"
       }
     ],
-    "name": "setBlockSpecimenMinSubmissionRequired",
+    "name": "setBlockHeightSubmissionsThreshold",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -862,18 +899,33 @@
         "type": "uint64"
       },
       {
-        "internalType": "uint64",
-        "name": "maxSubmissions",
-        "type": "uint64"
+        "internalType": "uint256",
+        "name": "blockOnTargetChain",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "blockOnCurrentChain",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "secondsPerBlock",
+        "type": "uint256"
       }
     ],
-    "name": "setMaxNumberOfHashesPer24H",
+    "name": "setChainSyncData",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "chainId",
+        "type": "uint64"
+      },
       {
         "internalType": "uint64",
         "name": "maxSubmissions",
@@ -919,12 +971,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint64",
-        "name": "numberOfBlocks",
-        "type": "uint64"
+        "internalType": "uint256",
+        "name": "quorum",
+        "type": "uint256"
       }
     ],
-    "name": "setNumberOfBlocksPer24H",
+    "name": "setQuorumThreshold",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -932,12 +984,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "quorum",
-        "type": "uint256"
+        "internalType": "uint64",
+        "name": "secondsPerBlock",
+        "type": "uint64"
       }
     ],
-    "name": "setQuorumThreshold",
+    "name": "setSecondsPerBlock",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
