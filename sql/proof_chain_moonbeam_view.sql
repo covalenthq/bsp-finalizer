@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW reports.proof_chain_moonbeam AS
+CREATE OR REPLACE VIEW chain_moonbeam_mainnet._proof_chain_events AS
 WITH
 session_started_events AS (
   SELECT session_started.tx_hash AS observer_chain_tx_hash,
