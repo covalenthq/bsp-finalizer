@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW chain_moonbeam_moonbase_alpha._proof_chain_events AS
+CREATE OR REPLACE VIEW chain_moonbeam_moonbase_alpha._proof_chain_specimen_events AS
 WITH
 session_started_events AS (
   SELECT session_started.tx_hash AS observer_chain_tx_hash,
@@ -18,7 +18,7 @@ session_started_events AS (
     AND trx.successful = TRUE
   ORDER BY session_started.block_id ASC, session_started.log_offset ASC
 ),
-block_specimen_reward_awarded_events AS (
+specimen_reward_awarded_events AS (
   SELECT
     fin.tx_hash AS observer_chain_tx_hash,
     fin.topics[2]::numeric AS origin_chain_id,
@@ -32,7 +32,7 @@ block_specimen_reward_awarded_events AS (
     AND trx_1.successful = TRUE
   ORDER BY fin.block_id ASC, fin.log_offset ASC
 ),
-quorum_not_reached_events AS (
+specimen_quorum_not_reached_events AS (
   SELECT
     fin.tx_hash AS observer_chain_tx_hash,
     fin.topics[2]::numeric AS origin_chain_id,
@@ -42,14 +42,14 @@ quorum_not_reached_events AS (
     ON (trx_1.block_id = fin.block_id AND trx_1.tx_offset = fin.tx_offset)
   WHERE
     fin.sender = '\x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
-    AND fin.topics @> ARRAY['\x398fd8f638a7242217f011fd0720a06747f7a85b7d28d7276684b841baea4021'::bytea]
+    AND fin.topics @> ARRAY['\x8340aa7a5b37153230f8b64fa66f25c843e5002c60e63a25db6a9195005ccabd'::bytea]
     AND trx_1.successful = TRUE
   ORDER BY fin.block_id ASC, fin.log_offset ASC
 ),
 all_finalization_events AS (
-  SELECT * FROM block_specimen_reward_awarded_events
+  SELECT * FROM specimen_reward_awarded_events
   UNION ALL
-  SELECT * FROM quorum_not_reached_events
+  SELECT * FROM specimen_quorum_not_reached_events
 )
 SELECT
   sse.observer_chain_tx_hash AS observer_chain_session_start_tx_hash,
