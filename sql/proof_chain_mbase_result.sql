@@ -16,6 +16,7 @@ session_started_events AS (
       '\x8b1f889addbfa41db5227bae3b091bd5c8b9a9122f874dfe54ba2f75aabe1f4c'::bytea
     ]
     AND trx.successful = TRUE
+    AND session_started.block_id >= '1910104892088990000'::bigint
   ORDER BY session_started.block_id ASC, session_started.log_offset ASC
 ),
 result_reward_awarded_events AS (
@@ -30,6 +31,7 @@ result_reward_awarded_events AS (
     fin.sender = '\x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
     AND fin.topics @> ARRAY['\x93dcf9329a330cb95723152c05719560f2fbd50e215c542854b27acc80c9108d'::bytea]
     AND trx_1.successful = TRUE
+    AND fin.block_id >= '1910104892088990000'::bigint
   ORDER BY fin.block_id ASC, fin.log_offset ASC
 ),
 result_quorum_not_reached_events AS (
@@ -44,6 +46,7 @@ result_quorum_not_reached_events AS (
     fin.sender = '\x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
     AND fin.topics @> ARRAY['\x31d16d882c6405d327fa305ecf0d52b45154868e0828822533fd2547f4b21a75'::bytea]
     AND trx_1.successful = TRUE
+    AND fin.block_id >= '1910104892088990000'::bigint
   ORDER BY fin.block_id ASC, fin.log_offset ASC
 ),
 all_finalization_events AS (
@@ -64,5 +67,6 @@ LEFT JOIN all_finalization_events afe ON (
   sse.origin_chain_id = afe.origin_chain_id
   AND sse.origin_chain_block_height = afe.origin_chain_block_height
 )
+WHERE sse.origin_chain_block_height > 16568764::numeric
 ORDER BY sse.observer_chain_block_id ASC, sse.observer_chain_tx_offset ASC
 ;
