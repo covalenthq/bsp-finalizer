@@ -4,9 +4,9 @@ import sys
 import os
 
 from dotenv import load_dotenv
-from contract import ProofChainContract
 from dbmanspecimen import DBManagerSpecimen
 from dbmanresult import DBManagerResult
+from contract import ProofChainContract
 from finalizer import Finalizer
 
 

@@ -3,9 +3,10 @@ import time
 import traceback
 
 import logformat
-from contract import ProofChainContract
+
 from finalizationspecimenrequest import FinalizationSpecimenRequest
 from finalizationresultrequest import FinalizationResultRequest
+from contract import ProofChainContract
 
 
 class Finalizer(threading.Thread):
