@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW chain_moonbeam_mainnet._proof_chain_events AS
+CREATE OR REPLACE VIEW chain_moonbeam_mainnet._proof_chain_specimen_events AS
 WITH
 session_started_events AS (
   SELECT session_started.tx_hash AS observer_chain_tx_hash,
@@ -13,12 +13,12 @@ session_started_events AS (
   WHERE
     session_started.sender = '\x4f2e285227d43d9eb52799d0a28299540452446e'::bytea
     AND session_started.topics @> ARRAY[
-      '\x8b1f889addbfa41db5227bae3b091bd5c8b9a9122f874dfe54ba2f75aabe1f4c'::bytea
+      '\x49caa59dfff8e73f72d249149e72487a67c49cf76549aed997c63963b436c3c2'::bytea
     ]
     AND trx.successful = TRUE
   ORDER BY session_started.block_id ASC, session_started.log_offset ASC
 ),
-block_specimen_reward_awarded_events AS (
+specimen_reward_awarded_events AS (
   SELECT
     fin.tx_hash AS observer_chain_tx_hash,
     fin.topics[2]::numeric AS origin_chain_id, 
@@ -32,7 +32,7 @@ block_specimen_reward_awarded_events AS (
     AND trx_1.successful = TRUE
   ORDER BY fin.block_id ASC, fin.log_offset ASC
 ),
-quorum_not_reached_events AS (
+specimen_quorum_not_reached_events AS (
   SELECT
     fin.tx_hash AS observer_chain_tx_hash,
     fin.topics[2]::numeric AS origin_chain_id,
@@ -42,14 +42,14 @@ quorum_not_reached_events AS (
     ON (trx_1.block_id = fin.block_id AND trx_1.tx_offset = fin.tx_offset)
   WHERE
     fin.sender = '\x4f2e285227d43d9eb52799d0a28299540452446e'::bytea
-    AND fin.topics @> ARRAY['\x398fd8f638a7242217f011fd0720a06747f7a85b7d28d7276684b841baea4021'::bytea]
+    AND fin.topics @> ARRAY['\x8340aa7a5b37153230f8b64fa66f25c843e5002c60e63a25db6a9195005ccabd'::bytea]
     AND trx_1.successful = TRUE
   ORDER BY fin.block_id ASC, fin.log_offset ASC
 ),
 all_finalization_events AS (
-  SELECT * FROM block_specimen_reward_awarded_events
+  SELECT * FROM specimen_reward_awarded_events
   UNION ALL
-  SELECT * FROM quorum_not_reached_events
+  SELECT * FROM specimen_quorum_not_reached_events
 )
 SELECT
   sse.observer_chain_tx_hash AS observer_chain_session_start_tx_hash,

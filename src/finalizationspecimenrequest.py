@@ -1,13 +1,13 @@
 import time
 
 
-class FinalizationRequest:
+class FinalizationSpecimenRequest:
     requests_to_be_finalized = {}
     requests_to_be_confirmed = {}
 
     @staticmethod
     def get_requests_to_be_finalized() -> []:
-        values = list(FinalizationRequest.requests_to_be_finalized.values())
+        values = list(FinalizationSpecimenRequest.requests_to_be_finalized.values())
         frs = []
         for v in values:
             for fr in v.values():
@@ -16,7 +16,7 @@ class FinalizationRequest:
 
     @staticmethod
     def get_requests_to_be_confirmed() -> []:
-        values = list(FinalizationRequest.requests_to_be_confirmed.values())
+        values = list(FinalizationSpecimenRequest.requests_to_be_confirmed.values())
         frs = []
         for v in values:
             for fr in v.values():
@@ -34,51 +34,55 @@ class FinalizationRequest:
         self.block_id = bid
 
     def confirm_request(self):
-        if self.chainId not in FinalizationRequest.requests_to_be_confirmed:
+        if self.chainId not in FinalizationSpecimenRequest.requests_to_be_confirmed:
             return None
-        FinalizationRequest.requests_to_be_confirmed[self.chainId].pop(
+        FinalizationSpecimenRequest.requests_to_be_confirmed[self.chainId].pop(
             self.blockHeight, None
         )
 
     def finalize_request(self):
-        if self.chainId not in FinalizationRequest.requests_to_be_finalized:
+        if self.chainId not in FinalizationSpecimenRequest.requests_to_be_finalized:
             return None
-        FinalizationRequest.requests_to_be_finalized[self.chainId].pop(
+        FinalizationSpecimenRequest.requests_to_be_finalized[self.chainId].pop(
             self.blockHeight, None
         )
 
         self.finalized_time = time.time()
 
     def finalize_later(self):
-        if self.chainId not in FinalizationRequest.requests_to_be_finalized:
-            FinalizationRequest.requests_to_be_finalized[self.chainId] = {}
-        reqs_for_chain = FinalizationRequest.requests_to_be_finalized[self.chainId]
+        if self.chainId not in FinalizationSpecimenRequest.requests_to_be_finalized:
+            FinalizationSpecimenRequest.requests_to_be_finalized[self.chainId] = {}
+        reqs_for_chain = FinalizationSpecimenRequest.requests_to_be_finalized[
+            self.chainId
+        ]
         if self.blockHeight in reqs_for_chain:
             return False
         reqs_for_chain[self.blockHeight] = self
         return True
 
     def confirm_later(self):
-        if self.chainId not in FinalizationRequest.requests_to_be_confirmed:
-            FinalizationRequest.requests_to_be_confirmed[self.chainId] = {}
-        reqs_for_chain = FinalizationRequest.requests_to_be_confirmed[self.chainId]
+        if self.chainId not in FinalizationSpecimenRequest.requests_to_be_confirmed:
+            FinalizationSpecimenRequest.requests_to_be_confirmed[self.chainId] = {}
+        reqs_for_chain = FinalizationSpecimenRequest.requests_to_be_confirmed[
+            self.chainId
+        ]
         if self.blockHeight in reqs_for_chain:
             return False
         reqs_for_chain[self.blockHeight] = self
         return True
 
     def waiting_for_confirm(self):
-        if self.chainId not in FinalizationRequest.requests_to_be_confirmed:
+        if self.chainId not in FinalizationSpecimenRequest.requests_to_be_confirmed:
             return False
         return (
             self.blockHeight
-            in FinalizationRequest.requests_to_be_confirmed[self.chainId]
+            in FinalizationSpecimenRequest.requests_to_be_confirmed[self.chainId]
         )
 
     def waiting_for_finalize(self):
-        if self.chainId not in FinalizationRequest.requests_to_be_finalized:
+        if self.chainId not in FinalizationSpecimenRequest.requests_to_be_finalized:
             return False
         return (
             self.blockHeight
-            in FinalizationRequest.requests_to_be_finalized[self.chainId]
+            in FinalizationSpecimenRequest.requests_to_be_finalized[self.chainId]
         )
