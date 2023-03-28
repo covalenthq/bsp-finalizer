@@ -30,7 +30,7 @@ lazy-object-proxy==1.9.0
 lru-dict==1.1.7
 mccabe==0.7.0
 multiaddr==0.0.9
-multidict==6.0.2
+multidict==6.0.4
 mypy-extensions==1.0.0
 netaddr==0.8.0
 packaging==23.0
