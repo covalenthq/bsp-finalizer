@@ -13,7 +13,7 @@ session_started_events AS (
   WHERE
     session_started.sender = '\x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
     AND session_started.topics @> ARRAY[
-      '\x8b1f889addbfa41db5227bae3b091bd5c8b9a9122f874dfe54ba2f75aabe1f4c'::bytea
+      '\x06a773d98907981dde2b75694bea53d9542cb1434717f5c66e699dee821a7324'::bytea
     ]
     AND trx.successful = TRUE
     AND session_started.block_id >= '1910104892088990000'::bigint
