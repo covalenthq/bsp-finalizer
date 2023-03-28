@@ -5,7 +5,8 @@ import os
 
 from dotenv import load_dotenv
 from contract import ProofChainContract
-from dbmanager import DBManager
+from dbmanspecimen import DBManagerSpecimen
+from dbmanresult import DBManagerResult
 from finalizer import Finalizer
 
 
@@ -38,7 +39,7 @@ if __name__ == "__main__":
         finalizer_prvkey=FINALIZER_PRIVATE_KEY,
         finalizer_address=FINALIZER_ADDRESS,
     )
-    dbm = DBManager(
+    dbms = DBManagerSpecimen(
         starting_point=int(BLOCK_ID_START),
         user=DB_USER,
         password=DB_PASSWORD,
@@ -46,20 +47,26 @@ if __name__ == "__main__":
         host=DB_HOST,
         chain_table=CHAIN_TABLE_NAME,
     )
-    dbm.daemon = True
+
+    dbms.daemon = True
+
+    dbmr = DBManagerResult(
+        starting_point=int(BLOCK_ID_START),
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_DATABASE,
+        host=DB_HOST,
+        chain_table=CHAIN_TABLE_NAME,
+    )
+
+    dbmr.daemon = True
 
     finalizer = Finalizer(contract)
     finalizer.daemon = True
-    dbm.start()
 
+    dbms.start()
+    dbmr.start()
     finalizer.start()
 
-    while is_any_thread_alive([finalizer, dbm]):
+    while is_any_thread_alive([finalizer, dbmr]):
         time.sleep(0.3)
-
-    #
-    # contract.send_finalize(4, 10430382)
-    # contract.subscribe_on_event(handle_event)
-
-    # dbm.join()
-    # finalizer.join()
