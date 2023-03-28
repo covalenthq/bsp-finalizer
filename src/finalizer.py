@@ -31,7 +31,7 @@ class Finalizer(threading.Thread):
     def __main_loop(self):
         self.wait_for_next_observer_chain_block()
         # self.refinalize_rejected_specimen_requests()
-        self.refinalize_rejected_result_requests()
+        # self.refinalize_rejected_result_requests()
 
         ready_to_specimen_finalize = []
         open_specimen_session_count = 0
