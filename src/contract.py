@@ -107,14 +107,19 @@ class ProofChainContract:
                 retries_left -= 1
                 exp += 1
 
-    def send_finalize(self, **kwargs):
-        return self._retry_with_backoff(self._attempt_send_finalize, **kwargs)
+    def send_specimen_finalize(self, **kwargs):
+        return self._retry_with_backoff(self._attempt_send_specimen_finalize, **kwargs)
 
-    def _attempt_send_finalize(self, chainId, blockHeight, timeout):
+    def send_result_finalize(self, **kwargs):
+        return self._retry_with_backoff(self._attempt_send_result_finalize, **kwargs)
+
+    def _attempt_send_specimen_finalize(self, chainId, blockHeight, timeout):
         if self.nonce is None:
             self._refresh_nonce()
         self.gasPrice = self.w3.eth.gasPrice
-        self.logger.info(f"TX dynamic gas price is {self.gasPrice}")
+        self.logger.info(
+            f"TX dynamic gas price for specimen finalization is {self.gasPrice}"
+        )
         transaction = self.contract.functions.finalizeAndRewardSpecimenSession(
             chainId, blockHeight
         ).buildTransaction(
@@ -137,7 +142,7 @@ class ProofChainContract:
         predicted_tx_hash = eth_hash.auto.keccak(signed_txn.rawTransaction)
 
         self.logger.info(
-            f"Sending finalization tx {chainId}/{blockHeight}"
+            f"Sending Specimen finalization tx {chainId}/{blockHeight}"
             f" senderBalance={balance_before_send_glmr}GLMR"
             f" senderNonce={self.nonce}"
             f" txHash=0x{predicted_tx_hash.hex()}"
@@ -170,11 +175,95 @@ class ProofChainContract:
 
                     # retry immediately (we already waited)
                     return (False, 0)
-                case (-32603, "Session cannot be finalized"):
-                    self.logger.info("Skipping session that cannot be finalized...")
+                case (-32603, "Specimen Session cannot be finalized"):
+                    self.logger.info(
+                        "Skipping specimen session that cannot be finalized..."
+                    )
                     return (True, None)
                 case (-32603, "already known"):
-                    self.logger.info("Skipping finalization tx that's already known...")
+                    self.logger.info(
+                        "Skipping specimen finalization tx that's already known..."
+                    )
+                    return (True, None)
+                case (-32603, "replacement transaction underpriced"):
+                    self.logger.info(
+                        "Skipping specimen finalization tx that's underpriced..."
+                    )
+                    return (True, None)
+                case _:
+                    raise
+
+    def _attempt_send_result_finalize(self, chainId, blockHeight, timeout):
+        if self.nonce is None:
+            self._refresh_nonce()
+        self.gasPrice = self.w3.eth.gasPrice
+        self.logger.info(
+            f"TX dynamic gas price for result finalization is {self.gasPrice}"
+        )
+        transaction = self.contract.functions.finalizeAndRewardBlockResultSession(
+            chainId, blockHeight
+        ).buildTransaction(
+            {
+                "gas": self.gas,
+                "gasPrice": self.gasPrice,
+                "from": self.finalizer_address,
+                "nonce": self.nonce,
+            }
+        )
+        signed_txn = self.w3.eth.account.signTransaction(
+            transaction, private_key=self.finalizer_prvkey
+        )
+
+        balance_before_send_wei = self.w3.eth.get_balance(self.finalizer_address)
+        balance_before_send_glmr = web3.auto.w3.fromWei(
+            balance_before_send_wei, "ether"
+        )
+
+        predicted_tx_hash = eth_hash.auto.keccak(signed_txn.rawTransaction)
+
+        self.logger.info(
+            f"Sending Result finalization tx {chainId}/{blockHeight}"
+            f" senderBalance={balance_before_send_glmr}GLMR"
+            f" senderNonce={self.nonce}"
+            f" txHash=0x{predicted_tx_hash.hex()}"
+        )
+
+        tx_hash = None
+        try:
+            tx_hash = self.w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+            return self.report_transaction_receipt(tx_hash, timeout)
+        except ValueError as ex:
+            if len(ex.args) != 1 or type(ex.args[0]) != dict:
+                raise
+
+            jsonrpc_err = ex.args[0]
+            if "code" not in jsonrpc_err or "message" not in jsonrpc_err:
+                raise
+
+            match (jsonrpc_err["code"], jsonrpc_err["message"]):
+                case (-32603, "nonce too low"):
+                    self.report_transaction_bounce(
+                        predicted_tx_hash,
+                        err="nonce too low",
+                        details={"txNonce": self.nonce},
+                    )
+                    self.logger.info(
+                        "Pausing to allow pending txs to clear, then refreshing nonce..."
+                    )
+                    time.sleep(60)
+                    self._refresh_nonce()
+
+                    # retry immediately (we already waited)
+                    return (False, 0)
+                case (-32603, "Result Session cannot be finalized"):
+                    self.logger.info(
+                        "Skipping Result session that cannot be finalized..."
+                    )
+                    return (True, None)
+                case (-32603, "already known"):
+                    self.logger.info(
+                        "Skipping Result finalization tx that's already known..."
+                    )
                     return (True, None)
                 case _:
                     raise
@@ -210,7 +299,7 @@ class ProofChainContract:
 
     def _refresh_nonce(self):
         self.nonce = self.w3.eth.get_transaction_count(self.finalizer_address)
-        self.logger.info(f"Refreshed nonce newNonce={self.nonce}")
+        self.logger.info(f"Refreshed nonce {self.nonce}")
 
     def block_number(self):
         return self._retry_with_backoff(self._attempt_block_number)
