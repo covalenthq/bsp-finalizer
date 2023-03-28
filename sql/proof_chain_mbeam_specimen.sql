@@ -13,7 +13,7 @@ session_started_events AS (
   WHERE
     session_started.sender = '\x4f2e285227d43d9eb52799d0a28299540452446e'::bytea
     AND session_started.topics @> ARRAY[
-      '\x8b1f889addbfa41db5227bae3b091bd5c8b9a9122f874dfe54ba2f75aabe1f4c'::bytea
+      '\x49caa59dfff8e73f72d249149e72487a67c49cf76549aed997c63963b436c3c2'::bytea
     ]
     AND trx.successful = TRUE
   ORDER BY session_started.block_id ASC, session_started.log_offset ASC
