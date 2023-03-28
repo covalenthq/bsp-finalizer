@@ -180,11 +180,11 @@ class ProofChainContract:
                         "Skipping specimen session that cannot be finalized..."
                     )
                     return (True, None)
-                case (-32603, "already known"):
-                    self.logger.info(
-                        "Skipping specimen finalization tx that's already known..."
-                    )
-                    return (True, None)
+                # case (-32603, "already known"):
+                #     self.logger.info(
+                #         "Skipping specimen finalization tx that's already known..."
+                #     )
+                #     return (True, None)
                 case _:
                     raise
 
@@ -255,11 +255,11 @@ class ProofChainContract:
                         "Skipping Result session that cannot be finalized..."
                     )
                     return (True, None)
-                case (-32603, "already known"):
-                    self.logger.info(
-                        "Skipping Result finalization tx that's already known..."
-                    )
-                    return (True, None)
+                # case (-32603, "already known"):
+                #     self.logger.info(
+                #         "Skipping Result finalization tx that's already known..."
+                #     )
+                #     return (True, None)
                 case _:
                     raise
 
