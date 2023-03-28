@@ -127,7 +127,7 @@ class Finalizer(threading.Thread):
     def _attempt_to_finalize_specimen(self, frs):
         try:
             self.contract.send_specimen_finalize(
-                chainId=int(frs.chainId), blockHeight=int(frs.blockHeight), timeout=300
+                chainId=int(frs.chainId), blockHeight=int(frs.blockHeight), timeout=360
             )
             frs.finalize_request()
             frs.confirm_later()
@@ -137,7 +137,7 @@ class Finalizer(threading.Thread):
     def _attempt_to_finalize_result(self, frr):
         try:
             self.contract.send_result_finalize(
-                chainId=int(frr.chainId), blockHeight=int(frr.blockHeight), timeout=300
+                chainId=int(frr.chainId), blockHeight=int(frr.blockHeight), timeout=360
             )
             frr.finalize_request()
             frr.confirm_later()

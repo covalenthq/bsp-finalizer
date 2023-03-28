@@ -185,11 +185,6 @@ class ProofChainContract:
                         "Skipping specimen finalization tx that's already known..."
                     )
                     return (True, None)
-                case (-32603, "replacement transaction underpriced"):
-                    self.logger.info(
-                        "Skipping specimen finalization tx that's underpriced..."
-                    )
-                    return (True, None)
                 case _:
                     raise
 

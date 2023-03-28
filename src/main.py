@@ -68,5 +68,5 @@ if __name__ == "__main__":
     dbmr.start()
     finalizer.start()
 
-    while is_any_thread_alive([finalizer, dbmr]):
+    while is_any_thread_alive([finalizer, dbmr, dbms]):
         time.sleep(0.3)
