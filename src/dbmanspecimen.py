@@ -80,12 +80,12 @@ class DBManagerSpecimen(threading.Thread):
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 16921800;',
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 16921800;',
                                 (self.last_block_id,),
                             )
                         else:
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_mainnet."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
+                                r'SELECT * FROM chain_moonbeam_mainnet."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
                                 (self.last_block_id,),
                             )
                         outputs = cur.fetchall()
@@ -107,12 +107,12 @@ class DBManagerSpecimen(threading.Thread):
                         # we need everything after last max block number
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 16921800;',
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 16921800;',
                                 (self.last_block_id,),
                             )
                         else:
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_mainnet."_proof_chain_events"  WHERE observer_chain_session_start_block_id > %s;',
+                                r'SELECT * FROM chain_moonbeam_mainnet."_proof_chain_specimen_events"  WHERE observer_chain_session_start_block_id > %s;',
                                 (self.last_block_id,),
                             )
 
@@ -148,11 +148,11 @@ class DBManagerSpecimen(threading.Thread):
                 with conn.cursor() as cur:
                     if self.chain_table == "chain_moonbeam_moonbase_alpha":
                         cur.execute(
-                            r'SELECT observer_chain_session_start_block_id FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1'
+                            r'SELECT observer_chain_session_start_block_id FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1'
                         )
                     else:
                         cur.execute(
-                            r'SELECT observer_chain_session_start_block_id FROM chain_moonbeam_mainnet."_proof_chain_events" WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1'
+                            r'SELECT observer_chain_session_start_block_id FROM chain_moonbeam_mainnet."_proof_chain_specimen_events" WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1'
                         )
                     block_id = cur.fetchone()
             if block_id is not None:
