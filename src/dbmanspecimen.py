@@ -80,7 +80,7 @@ class DBManagerSpecimen(threading.Thread):
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 16928490;',
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 16939820;',
                                 (self.last_block_id,),
                             )
                         else:
@@ -107,7 +107,7 @@ class DBManagerSpecimen(threading.Thread):
                         # we need everything after last max block number
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 16928490;',
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 16939820;',
                                 (self.last_block_id,),
                             )
                         else:
