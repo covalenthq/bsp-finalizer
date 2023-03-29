@@ -5,10 +5,10 @@ import traceback
 import psycopg2
 import logformat
 
-from finalizationrequest import FinalizationRequest
+from finalizationspecimenrequest import FinalizationSpecimenRequest
 
 
-class DBManager(threading.Thread):
+class DBManagerSpecimen(threading.Thread):
     caught_up: bool = False
     last_block_id: int
     starting_point: int
@@ -36,7 +36,7 @@ class DBManager(threading.Thread):
             chainId = output[3]
             deadline = output[5]
             finalizationHash = output[6]
-            fr = FinalizationRequest(
+            fr = FinalizationSpecimenRequest(
                 chainId=chainId,
                 blockHeight=blockHeight,
                 deadline=deadline,
@@ -53,9 +53,9 @@ class DBManager(threading.Thread):
                         self._update_cursor(fr.session_started_block_id)
                         c += 1
         if fl > 0:
-            self.logger.info(f"Queued {fl} proof-sessions for finalization")
+            self.logger.info(f"Queued {fl} specimen proof-sessions for finalization")
         if c > 0:
-            self.logger.info(f"Confirmed {c} proof-sessions")
+            self.logger.info(f"Confirmed {c} specimen proof-sessions")
         if self.last_block_id > prev_last_block_id:
             self.logger.info(f"Updated cursor position block_id={self.last_block_id}")
 
@@ -80,17 +80,19 @@ class DBManager(threading.Thread):
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 16805810;',
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 16928490;',
                                 (self.last_block_id,),
                             )
                         else:
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_mainnet."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
+                                r'SELECT * FROM chain_moonbeam_mainnet."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
                                 (self.last_block_id,),
                             )
                         outputs = cur.fetchall()
 
-                self.logger.info(f"Processing {len(outputs)} proof-session records...")
+                self.logger.info(
+                    f"Processing {len(outputs)} specimen proof-session records..."
+                )
                 self._process_outputs(outputs)
 
                 self.caught_up = True
@@ -105,19 +107,19 @@ class DBManager(threading.Thread):
                         # we need everything after last max block number
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 16805810;',
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 16928490;',
                                 (self.last_block_id,),
                             )
                         else:
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_mainnet."_proof_chain_events"  WHERE observer_chain_session_start_block_id > %s;',
+                                r'SELECT * FROM chain_moonbeam_mainnet."_proof_chain_specimen_events"  WHERE observer_chain_session_start_block_id > %s;',
                                 (self.last_block_id,),
                             )
 
                         outputs = cur.fetchall()
 
                 if self._process_outputs(outputs) == 0:
-                    self.logger.info("No new proof-session records discovered")
+                    self.logger.info("No new specimen proof-session records discovered")
 
                 time.sleep(40)
 
@@ -146,11 +148,11 @@ class DBManager(threading.Thread):
                 with conn.cursor() as cur:
                     if self.chain_table == "chain_moonbeam_moonbase_alpha":
                         cur.execute(
-                            r'SELECT observer_chain_session_start_block_id FROM chain_moonbeam_moonbase_alpha."_proof_chain_events" WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1'
+                            r'SELECT observer_chain_session_start_block_id FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1'
                         )
                     else:
                         cur.execute(
-                            r'SELECT observer_chain_session_start_block_id FROM chain_moonbeam_mainnet."_proof_chain_events" WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1'
+                            r'SELECT observer_chain_session_start_block_id FROM chain_moonbeam_mainnet."_proof_chain_specimen_events" WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1'
                         )
                     block_id = cur.fetchone()
             if block_id is not None:
@@ -161,10 +163,10 @@ class DBManager(threading.Thread):
             self.logger.warning("".join(traceback.format_exception(ex)))
 
     def _update_cursor(self, block_id):
-        for fr in FinalizationRequest.get_requests_to_be_confirmed():
+        for fr in FinalizationSpecimenRequest.get_requests_to_be_confirmed():
             if fr.session_started_block_id < block_id:
                 return
-        for fr in FinalizationRequest.get_requests_to_be_finalized():
+        for fr in FinalizationSpecimenRequest.get_requests_to_be_finalized():
             if fr.session_started_block_id < block_id:
                 return
         self.last_block_id = block_id

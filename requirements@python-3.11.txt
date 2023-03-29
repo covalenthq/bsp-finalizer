@@ -1,4 +1,4 @@
-aiohttp==3.8.2
+aiohttp==3.8.4
 aiosignal==1.2.0
 async-timeout==4.0.2
 attrs==21.4.0
@@ -22,7 +22,7 @@ importlib-resources==5.7.0
 jsonschema==4.4.0
 lru-dict==1.1.7
 multiaddr==0.0.9
-multidict==5.2.0
+multidict==6.0.4
 netaddr==0.8.0
 parsimonious==0.8.1
 protobuf==3.20.0
