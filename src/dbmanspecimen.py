@@ -121,7 +121,7 @@ class DBManagerSpecimen(threading.Thread):
                 if self._process_outputs(outputs) == 0:
                     self.logger.info("No new specimen proof-session records discovered")
 
-                time.sleep(40)
+                time.sleep(10)
 
         except (Exception, psycopg2.DatabaseError) as ex:
             self.logger.critical("".join(traceback.format_exception(ex)))
@@ -135,7 +135,7 @@ class DBManagerSpecimen(threading.Thread):
         while True:
             try:
                 self.__main_loop()
-                time.sleep(60)
+                time.sleep(10)
             except (Exception, psycopg2.DatabaseError) as ex:
                 self.logger.warning("".join(traceback.format_exception(ex)))
                 # this should never happen
