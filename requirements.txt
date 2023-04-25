@@ -13,7 +13,7 @@ cytoolz==0.11.2
 dill==0.3.6
 eth-abi==2.1.1
 eth-account==0.5.7
-eth-hash==0.3.2
+eth-hash==0.3.3
 eth-keyfile==0.5.1
 eth-keys==0.3.4
 eth-rlp==0.2.1
