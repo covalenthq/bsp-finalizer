@@ -174,7 +174,7 @@
         },
         "eth-hash": {
             "extras": [
-                "pycryptodome"
+
             ],
             "hashes": [
                 "sha256:3f40cecd5ead88184aa9550afc19d057f103728108c5102f592f8415949b5a76",
@@ -575,11 +575,11 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:44ece4d53fb1706f667c9bd1c648f5469a2ec925fcf3a776667042d645472c14",
-                "sha256:aabaf16477806a5e1dd19aa41f8c2b7950dd3c746362d7e3223dbe6de6ac448e"
+                "sha256:8a388717b9476f934a21484e8c8e61875ab60644d29b9b39e11e4b9dc1c6b305",
+                "sha256:aa751d169e23c7479ce47a0cb0da579e3ede798f994f5816a74e4f4500dcea42"
             ],
             "index": "pypi",
-            "version": "==1.26.9"
+            "version": "==1.26.15"
         },
         "varint": {
             "hashes": [
