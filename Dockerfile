@@ -4,7 +4,7 @@ FROM python:3.10-alpine3.17
 # set the working directory in the container
 WORKDIR /app
 
-RUN apk update && apk add --no-cache build-base=0.5-r3 postgresql15-dev=15.2-r0 libxml2=2.10.4-r0
+RUN apk update && apk add --no-cache build-base postgresql15-dev libxml2
 
 # copy the dependencies file to the working directory
 COPY requirements.txt .
