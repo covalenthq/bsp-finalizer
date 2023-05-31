@@ -67,7 +67,7 @@ class ProofChainContract:
             )
         self.logger = logformat.get_logger("Contract")
 
-        with (MODULE_ROOT_PATH / "abi" / "BlockSpecimenProofChainContractABI").open("r") as f:
+        with (MODULE_ROOT_PATH / "abi" / "BlockResultProofChainContractABI").open("r") as f:
             self.brpContract = self.w3.eth.contract(
                 address=self.brpContractAddress, abi=f.read()
             )
@@ -200,7 +200,7 @@ class ProofChainContract:
         self.logger.info(
             f"TX dynamic gas price for result finalization is {self.gasPrice}"
         )
-        transaction = self.brpContract.functions.finalizeAndRewardBlockResultSession(
+        transaction = self.brpContract.functions.finalizeAndRewardResultSession(
             chainId, blockHeight
         ).buildTransaction(
             {
