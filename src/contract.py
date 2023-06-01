@@ -28,7 +28,7 @@ class LoggableReceipt:
 
     def __str__(self):
         return (
-            f"txHash=0x{self.txHash}"
+            f"txHash={self.txHash}"
             f" includedAs={self.blockNumber}/{self.txIndex}"
             f" spentGas={self.gasUsed}"
         )
