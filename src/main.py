@@ -18,7 +18,8 @@ if __name__ == "__main__":
     load_dotenv()
 
     BLOCK_ID_START = os.getenv("BLOCK_ID_START", "-1")
-    PROOFCHAIN_ADDRESS = os.getenv("PROOFCHAIN_ADDRESS")
+    BSP_PROOFCHAIN_ADDRESS = os.getenv("BSP_PROOFCHAIN_ADDRESS")
+    BRP_PROOFCHAIN_ADDRESS = os.getenv("BRP_PROOFCHAIN_ADDRESS")
     FINALIZER_PRIVATE_KEY = os.getenv("FINALIZER_PRIVATE_KEY")
     FINALIZER_ADDRESS = os.getenv("FINALIZER_ADDRESS")
     RPC_ENDPOINT = os.getenv("RPC_ENDPOINT")
@@ -35,9 +36,10 @@ if __name__ == "__main__":
     )
     contract = ProofChainContract(
         rpc_endpoint=RPC_ENDPOINT,
-        proofchain_address=PROOFCHAIN_ADDRESS,
-        finalizer_prvkey=FINALIZER_PRIVATE_KEY,
         finalizer_address=FINALIZER_ADDRESS,
+        finalizer_prvkey=FINALIZER_PRIVATE_KEY,
+        bsp_proofchain_address=BSP_PROOFCHAIN_ADDRESS,
+        brp_proofchain_address=BRP_PROOFCHAIN_ADDRESS,
     )
     dbms = DBManagerSpecimen(
         starting_point=int(BLOCK_ID_START),

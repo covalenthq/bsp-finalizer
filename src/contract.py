@@ -48,7 +48,7 @@ class LoggableBounce:
 
 class ProofChainContract:
     def __init__(
-        self, rpc_endpoint, finalizer_address, finalizer_prvkey, proofchain_address
+        self, rpc_endpoint, finalizer_address, finalizer_prvkey, bsp_proofchain_address, brp_proofchain_address
     ):
         self.nonce = None
         self.counter = 0
@@ -59,14 +59,19 @@ class ProofChainContract:
         self.gas = int(os.getenv("GAS_LIMIT"))
         self.gasPrice = web3.auto.w3.toWei(os.getenv("GAS_PRICE"), "gwei")
         self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
-        self.contractAddress: str = proofchain_address
-        with (MODULE_ROOT_PATH / "abi" / "ProofChainContractABI").open("r") as f:
-            self.contract = self.w3.eth.contract(
-                address=self.contractAddress, abi=f.read()
+        self.bspContractAddress: str = bsp_proofchain_address
+        self.brpContractAddress: str = brp_proofchain_address
+        with (MODULE_ROOT_PATH / "abi" / "BlockSpecimenProofChainContractABI").open("r") as f:
+            self.bspContract = self.w3.eth.contract(
+                address=self.bspContractAddress, abi=f.read()
             )
-
         self.logger = logformat.get_logger("Contract")
 
+        with (MODULE_ROOT_PATH / "abi" / "BlockResultProofChainContractABI").open("r") as f:
+            self.brpContract = self.w3.eth.contract(
+                address=self.brpContractAddress, abi=f.read()
+            )
+        self.logger = logformat.get_logger("Contract")
     # asynchronous defined function to loop
     # this loop sets up an event filter and is looking for new entires for the "PairCreated" event
     # this loop runs on a poll interval
@@ -120,7 +125,7 @@ class ProofChainContract:
         self.logger.info(
             f"TX dynamic gas price for specimen finalization is {self.gasPrice}"
         )
-        transaction = self.contract.functions.finalizeAndRewardSpecimenSession(
+        transaction = self.bspContract.functions.finalizeAndRewardSpecimenSession(
             chainId, blockHeight
         ).buildTransaction(
             {
@@ -195,7 +200,7 @@ class ProofChainContract:
         self.logger.info(
             f"TX dynamic gas price for result finalization is {self.gasPrice}"
         )
-        transaction = self.contract.functions.finalizeAndRewardBlockResultSession(
+        transaction = self.brpContract.functions.finalizeAndRewardResultSession(
             chainId, blockHeight
         ).buildTransaction(
             {

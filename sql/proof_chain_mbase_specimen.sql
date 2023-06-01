@@ -11,9 +11,9 @@ session_started_events AS (
   JOIN chain_moonbeam_moonbase_alpha.block_transactions trx
     ON (trx.block_id = session_started.block_id AND trx.tx_offset = session_started.tx_offset)
   WHERE
-    session_started.sender = '\x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
+    session_started.sender = '\x1BFa3b5E9bE2c5298B7DE11B5Acb08c37683f4eF'::bytea
     AND session_started.topics @> ARRAY[
-      '\x49caa59dfff8e73f72d249149e72487a67c49cf76549aed997c63963b436c3c2'::bytea
+      '\x8b1f889addbfa41db5227bae3b091bd5c8b9a9122f874dfe54ba2f75aabe1f4c'::bytea
     ]
     AND trx.successful = TRUE
     AND session_started.block_id >= '1910104892088990000'::bigint
@@ -28,7 +28,7 @@ specimen_reward_awarded_events AS (
   JOIN chain_moonbeam_moonbase_alpha.block_transactions trx_1
     ON (trx_1.block_id = fin.block_id AND trx_1.tx_offset = fin.tx_offset)
   WHERE
-    fin.sender = '\x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
+    fin.sender = '\x1BFa3b5E9bE2c5298B7DE11B5Acb08c37683f4eF'::bytea
     AND fin.topics @> ARRAY['\xf05ac779af1ec75a7b2fbe9415b33a67c00294a121786f7ce2eb3f92e4a6424a'::bytea]
     AND trx_1.successful = TRUE
     AND fin.block_id >= '1910104892088990000'::bigint
@@ -43,7 +43,7 @@ specimen_quorum_not_reached_events AS (
   JOIN chain_moonbeam_moonbase_alpha.block_transactions trx_1
     ON (trx_1.block_id = fin.block_id AND trx_1.tx_offset = fin.tx_offset)
   WHERE
-    fin.sender = '\x19492a5019B30471aA8fa2c6D9d39c99b5Cda20C'::bytea
+    fin.sender = '\x1BFa3b5E9bE2c5298B7DE11B5Acb08c37683f4eF'::bytea
     AND fin.topics @> ARRAY['\x8340aa7a5b37153230f8b64fa66f25c843e5002c60e63a25db6a9195005ccabd'::bytea]
     AND trx_1.successful = TRUE
     AND fin.block_id >= '1910104892088990000'::bigint
@@ -67,6 +67,6 @@ LEFT JOIN all_finalization_events afe ON (
   sse.origin_chain_id = afe.origin_chain_id
   AND sse.origin_chain_block_height = afe.origin_chain_block_height
 )
-WHERE sse.origin_chain_block_height > 16568764::numeric
+WHERE sse.origin_chain_block_height > 17374020::numeric
 ORDER BY sse.observer_chain_block_id ASC, sse.observer_chain_tx_offset ASC
 ;
