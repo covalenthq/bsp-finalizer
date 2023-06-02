@@ -45,14 +45,10 @@ class Finalizer(threading.Thread):
             else:
                 open_specimen_session_count += 1
 
-        self.logger.info(
-            f"Finalizing {len(ready_to_specimen_finalize)} specimen proof-sessions..."
-        )
+        self.logger.info(f"Finalizing {len(ready_to_specimen_finalize)} specimen proof-sessions...")
         for frs in ready_to_specimen_finalize:
             self._attempt_to_finalize_specimen(frs)
-        self.logger.info(
-            f"Finalized {len(ready_to_specimen_finalize)} specimen proof-sessions"
-        )
+        self.logger.info(f"Finalized {len(ready_to_specimen_finalize)} specimen proof-sessions")
 
         if len(ready_to_specimen_finalize) == 0:
             self.logger.debug(
@@ -65,14 +61,10 @@ class Finalizer(threading.Thread):
             else:
                 open_result_session_count += 1
 
-        self.logger.info(
-            f"Finalizing {len(ready_to_result_finalize)} result proof-sessions..."
-        )
+        self.logger.info(f"Finalizing {len(ready_to_result_finalize)} result proof-sessions...")
         for frr in ready_to_result_finalize:
             self._attempt_to_finalize_result(frr)
-        self.logger.info(
-            f"Finalized {len(ready_to_result_finalize)} result proof-sessions"
-        )
+        self.logger.info(f"Finalized {len(ready_to_result_finalize)} result proof-sessions")
 
         if len(ready_to_result_finalize) == 0:
             self.logger.debug(
