@@ -13,7 +13,7 @@ cytoolz==0.11.2
 dill==0.3.6
 eth-abi==2.1.1
 eth-account==0.5.7
-eth-hash==0.3.2
+eth-hash==0.3.3
 eth-keyfile==0.5.1
 eth-keys==0.3.4
 eth-rlp==0.2.1
@@ -51,10 +51,10 @@ tomli==2.0.1
 tomlkit==0.11.6
 toolz==0.11.2
 typing_extensions==4.5.0
-urllib3==1.26.9
+urllib3==1.26.15
 varint==1.0.2
 web3==5.29.0
 websockets==9.1
 wrapt==1.15.0
-yarl==1.7.2
+yarl==1.9.1
 zipp==3.8.0

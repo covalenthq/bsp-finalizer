@@ -45,14 +45,10 @@ class Finalizer(threading.Thread):
             else:
                 open_specimen_session_count += 1
 
-        self.logger.info(
-            f"Finalizing {len(ready_to_specimen_finalize)} specimen proof-sessions..."
-        )
+        self.logger.info(f"Finalizing {len(ready_to_specimen_finalize)} specimen proof-sessions...")
         for frs in ready_to_specimen_finalize:
             self._attempt_to_finalize_specimen(frs)
-        self.logger.info(
-            f"Finalized {len(ready_to_specimen_finalize)} specimen proof-sessions"
-        )
+        self.logger.info(f"Finalized {len(ready_to_specimen_finalize)} specimen proof-sessions")
 
         if len(ready_to_specimen_finalize) == 0:
             self.logger.debug(
@@ -65,14 +61,10 @@ class Finalizer(threading.Thread):
             else:
                 open_result_session_count += 1
 
-        self.logger.info(
-            f"Finalizing {len(ready_to_result_finalize)} result proof-sessions..."
-        )
+        self.logger.info(f"Finalizing {len(ready_to_result_finalize)} result proof-sessions...")
         for frr in ready_to_result_finalize:
             self._attempt_to_finalize_result(frr)
-        self.logger.info(
-            f"Finalized {len(ready_to_result_finalize)} result proof-sessions"
-        )
+        self.logger.info(f"Finalized {len(ready_to_result_finalize)} result proof-sessions")
 
         if len(ready_to_result_finalize) == 0:
             self.logger.debug(
@@ -128,7 +120,7 @@ class Finalizer(threading.Thread):
     def _attempt_to_finalize_specimen(self, frs):
         try:
             self.contract.send_specimen_finalize(
-                chainId=int(frs.chainId), blockHeight=int(frs.blockHeight), timeout=360
+                chainId=int(frs.chainId), blockHeight=int(frs.blockHeight), timeout=200
             )
             frs.finalize_request()
             frs.confirm_later()
@@ -138,7 +130,7 @@ class Finalizer(threading.Thread):
     def _attempt_to_finalize_result(self, frr):
         try:
             self.contract.send_result_finalize(
-                chainId=int(frr.chainId), blockHeight=int(frr.blockHeight), timeout=360
+                chainId=int(frr.chainId), blockHeight=int(frr.blockHeight), timeout=200
             )
             frr.finalize_request()
             frr.confirm_later()
