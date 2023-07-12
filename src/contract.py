@@ -14,7 +14,7 @@ import logformat
 
 MODULE_ROOT_PATH = pathlib.Path(__file__).parent.parent.resolve()
 
-
+print(MODULE_ROOT_PATH, "module root path")
 class LoggableReceipt:
     def __init__(self, fields, fail_reason=None):
         self.blockNumber = fields["blockNumber"]

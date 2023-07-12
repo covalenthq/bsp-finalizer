@@ -41,6 +41,7 @@ if __name__ == "__main__":
         bsp_proofchain_address=BSP_PROOFCHAIN_ADDRESS,
         brp_proofchain_address=BRP_PROOFCHAIN_ADDRESS,
     )
+
     # dbms = DBManagerSpecimen(
     #     starting_point=int(BLOCK_ID_START),
     #     user=DB_USER,
