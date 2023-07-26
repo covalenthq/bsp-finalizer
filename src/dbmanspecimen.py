@@ -131,7 +131,7 @@ class DBManagerSpecimen(threading.Thread):
         while True:
             try:
                 self.__main_loop()
-                time.sleep(10)
+                # time.sleep(10)
             except (Exception, psycopg2.DatabaseError) as ex:
                 self.logger.warning("".join(traceback.format_exception(ex)))
                 # this should never happen
