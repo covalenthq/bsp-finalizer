@@ -71,4 +71,4 @@ if __name__ == "__main__":
     finalizer.start()
 
     while is_any_thread_alive([finalizer, dbms]):
-        time.sleep(0.3)
+        time.sleep(0.1)

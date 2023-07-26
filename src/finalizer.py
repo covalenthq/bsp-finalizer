@@ -23,10 +23,10 @@ class Finalizer(threading.Thread):
                 if bn > self.observer_chain_block_height:
                     self.observer_chain_block_height = bn
                     return
-                time.sleep(4.0)
+                time.sleep(1.0)
             except Exception as ex:
                 self.logger.critical("".join(traceback.format_exception(ex)))
-                time.sleep(4.0)
+                time.sleep(1.0)
 
     def __main_loop(self):
         self.wait_for_next_observer_chain_block()

@@ -116,6 +116,8 @@ class DBManagerSpecimen(threading.Thread):
 
                 if self._process_outputs(outputs) == 0:
                     self.logger.info("No new specimen proof-session records discovered")
+                
+                break
 
                 #time.sleep(10)
 
