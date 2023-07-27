@@ -171,7 +171,7 @@ class ProofChainContract:
                     self.logger.info(
                         "Pausing to allow pending txs to clear, then refreshing nonce..."
                     )
-                    time.sleep(60)
+                    time.sleep(1)
                     self._refresh_nonce()
 
                     # retry immediately (we already waited)
@@ -240,7 +240,7 @@ class ProofChainContract:
                     self.logger.info(
                         "Pausing to allow pending txs to clear, then refreshing nonce..."
                     )
-                    time.sleep(60)
+                    time.sleep(1)
                     self._refresh_nonce()
 
                     # retry immediately (we already waited)

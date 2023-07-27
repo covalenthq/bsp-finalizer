@@ -10,11 +10,13 @@ from contract import ProofChainContract
 
 
 class Finalizer(threading.Thread):
-    def __init__(self, cn: ProofChainContract):
+    def __init__(self, cn: ProofChainContract, lock):
         super().__init__()
         self.contract = cn
         self.logger = logformat.get_logger("Finalizer")
         self.observer_chain_block_height = 0
+        self.running = True
+        self.lock = lock
 
     def wait_for_next_observer_chain_block(self):
         while True:
@@ -23,10 +25,10 @@ class Finalizer(threading.Thread):
                 if bn > self.observer_chain_block_height:
                     self.observer_chain_block_height = bn
                     return
-                time.sleep(4.0)
+                time.sleep(1.0)
             except Exception as ex:
                 self.logger.critical("".join(traceback.format_exception(ex)))
-                time.sleep(4.0)
+                time.sleep(1.0)
 
     def __main_loop(self):
         self.wait_for_next_observer_chain_block()
@@ -74,9 +76,11 @@ class Finalizer(threading.Thread):
 
     def run(self) -> None:
         # we need to avoid recursion in order to avoid stack depth exceeded exception
-        while True:
+        while self.running:
             try:
+                self.lock.acquire()
                 self.__main_loop()
+                self.lock.release()
             except RecursionError:
                 # this should never happen
                 pass
@@ -130,7 +134,7 @@ class Finalizer(threading.Thread):
     def _attempt_to_finalize_result(self, frr):
         try:
             self.contract.send_result_finalize(
-                chainId=int(frr.chainId), blockHeight=int(frr.blockHeight), timeout=200
+                chainId=int(frr.chainId), blockHeight=int(frr.blockHeight), timeout=60
             )
             frr.finalize_request()
             frr.confirm_later()

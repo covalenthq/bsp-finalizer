@@ -80,7 +80,7 @@ class DBManagerResult(threading.Thread):
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_result_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 17679235;',
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_result_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 17769204;',
                                 (self.last_block_id,),
                             )
                         else:
@@ -103,7 +103,7 @@ class DBManagerResult(threading.Thread):
                         # we need everything after last max block number
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_result_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 17679235;',
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_result_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 17769204;',
                                 (self.last_block_id,),
                             )
                         else:
@@ -117,7 +117,7 @@ class DBManagerResult(threading.Thread):
                 if self._process_outputs(outputs) == 0:
                     self.logger.info("No new result proof-session records discovered")
 
-                time.sleep(10)
+                # time.sleep(10)
 
         except (Exception, psycopg2.DatabaseError) as ex:
             self.logger.critical("".join(traceback.format_exception(ex)))
@@ -131,7 +131,7 @@ class DBManagerResult(threading.Thread):
         while True:
             try:
                 self.__main_loop()
-                time.sleep(10)
+                #time.sleep(10)
             except (Exception, psycopg2.DatabaseError) as ex:
                 self.logger.warning("".join(traceback.format_exception(ex)))
                 # this should never happen
