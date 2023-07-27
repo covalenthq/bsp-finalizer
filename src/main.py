@@ -1,4 +1,5 @@
 import logging
+import threading
 import time
 import sys
 import os
@@ -29,6 +30,8 @@ if __name__ == "__main__":
     DB_DATABASE = os.getenv("DB_DATABASE")
     CHAIN_TABLE_NAME = os.getenv("CHAIN_TABLE_NAME")
 
+    lock = threading.Lock()
+
     logging.basicConfig(
         stream=sys.stdout,
         format="%(levelname)s %(name)s (%(filename)s:%(lineno)d) - %(message)s",
@@ -48,9 +51,10 @@ if __name__ == "__main__":
         database=DB_DATABASE,
         host=DB_HOST,
         chain_table=CHAIN_TABLE_NAME,
+        # lock=lock
     )
-
-    dbms.daemon = True
+    
+    dbms.daemon = False
 
     # dbmr = DBManagerResult(
     #     starting_point=int(BLOCK_ID_START),
@@ -63,12 +67,17 @@ if __name__ == "__main__":
 
     # dbmr.daemon = True
 
-    finalizer = Finalizer(contract)
+    finalizer = Finalizer(contract,lock)
     finalizer.daemon = True
-
+    
     dbms.start()
-    # dbmr.start()
     finalizer.start()
 
-    while is_any_thread_alive([finalizer, dbms]):
-        time.sleep(0.1)
+    # dbmr.start()
+
+    dbms.join()
+    finalizer.join()
+
+
+    # while is_any_thread_alive([finalizer, dbms]):
+    #     time.sleep(0.1)

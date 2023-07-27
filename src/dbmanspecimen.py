@@ -25,6 +25,8 @@ class DBManagerSpecimen(threading.Thread):
 
         self.logger = logformat.get_logger("DB")
         self.starting_point = starting_point
+        # self.running = True
+        # self.lock = lock
 
     def _process_outputs(self, outputs):
         fl = 0
@@ -116,8 +118,6 @@ class DBManagerSpecimen(threading.Thread):
 
                 if self._process_outputs(outputs) == 0:
                     self.logger.info("No new specimen proof-session records discovered")
-                
-                break
 
                 #time.sleep(10)
 
@@ -132,7 +132,9 @@ class DBManagerSpecimen(threading.Thread):
             self.__fetch_last_block()
         while True:
             try:
+                # self.lock.acquire()
                 self.__main_loop()
+                # self.lock.release()
                 # time.sleep(10)
             except (Exception, psycopg2.DatabaseError) as ex:
                 self.logger.warning("".join(traceback.format_exception(ex)))

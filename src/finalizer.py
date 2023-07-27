@@ -10,11 +10,13 @@ from contract import ProofChainContract
 
 
 class Finalizer(threading.Thread):
-    def __init__(self, cn: ProofChainContract):
+    def __init__(self, cn: ProofChainContract, lock):
         super().__init__()
         self.contract = cn
         self.logger = logformat.get_logger("Finalizer")
         self.observer_chain_block_height = 0
+        self.running = True
+        self.lock = lock
 
     def wait_for_next_observer_chain_block(self):
         while True:
@@ -74,9 +76,11 @@ class Finalizer(threading.Thread):
 
     def run(self) -> None:
         # we need to avoid recursion in order to avoid stack depth exceeded exception
-        while True:
+        while self.running:
             try:
+                self.lock.acquire()
                 self.__main_loop()
+                self.lock.release()
             except RecursionError:
                 # this should never happen
                 pass
