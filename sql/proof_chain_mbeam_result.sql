@@ -6,7 +6,7 @@ session_started_events AS (
     session_started.tx_offset AS observer_chain_tx_offset,
     session_started.topics[2]::numeric AS origin_chain_id,
     session_started.topics[3]::numeric AS origin_chain_block_height,
-    abi_field(session_started.data, 0)::numeric AS proof_session_deadline
+    abi_field(session_started.data, 0)::numeric AS result_session_deadline
   FROM chain_moonbeam_mainnet.block_log_events session_started
   JOIN chain_moonbeam_mainnet.block_transactions trx
     ON (trx.block_id = session_started.block_id AND trx.tx_offset = session_started.tx_offset)
