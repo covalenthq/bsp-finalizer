@@ -85,7 +85,7 @@ class DBManagerSpecimen(threading.Thread):
                             )
                         else:
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_mainnet."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
+                                r'SELECT * FROM chain_moonbeam_mainnet."_proof_chain_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL;',
                                 (self.last_block_id,),
                             )
                         outputs = cur.fetchall()
@@ -108,7 +108,7 @@ class DBManagerSpecimen(threading.Thread):
                             )
                         else:
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_mainnet."_proof_chain_specimen_events"  WHERE observer_chain_session_start_block_id > %s;',
+                                r'SELECT * FROM chain_moonbeam_mainnet."_proof_chain_events"  WHERE observer_chain_session_start_block_id > %s;',
                                 (self.last_block_id,),
                             )
 
@@ -148,7 +148,7 @@ class DBManagerSpecimen(threading.Thread):
                         )
                     else:
                         cur.execute(
-                            r'SELECT observer_chain_session_start_block_id FROM chain_moonbeam_mainnet."_proof_chain_specimen_events" WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1'
+                            r'SELECT observer_chain_session_start_block_id FROM chain_moonbeam_mainnet."_proof_chain_events" WHERE observer_chain_finalization_tx_hash IS NULL LIMIT 1'
                         )
                     block_id = cur.fetchone()
             if block_id is not None:
