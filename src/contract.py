@@ -126,7 +126,8 @@ class ProofChainContract:
         transaction = self.bspContract.functions.finalizeAndRewardSpecimenSession(
             chainId, blockHeight
         ).buildTransaction(
-            {
+            {   
+                "to": self.bspContractAddress,
                 "gas": self.gas,
                 "gasPrice": self.gasPrice,
                 "from": self.finalizer_address,
@@ -196,6 +197,7 @@ class ProofChainContract:
             chainId, blockHeight
         ).buildTransaction(
             {
+                "to": self.brpContractAddress,
                 "gas": self.gas,
                 "gasPrice": self.gasPrice,
                 "from": self.finalizer_address,
