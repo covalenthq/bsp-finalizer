@@ -11,9 +11,9 @@ session_started_events AS (
   JOIN chain_moonbeam_mainnet.block_transactions trx
     ON (trx.block_id = session_started.block_id AND trx.tx_offset = session_started.tx_offset)
   WHERE
-    session_started.sender = '\x4f2e285227d43d9eb52799d0a28299540452446e'::bytea
+    session_started.sender = '\x254E3FA072324fa202577F24147066359947bC23'::bytea
     AND session_started.topics @> ARRAY[
-      '\x06a773d98907981dde2b75694bea53d9542cb1434717f5c66e699dee821a7324'::bytea
+      '\x8b1f889addbfa41db5227bae3b091bd5c8b9a9122f874dfe54ba2f75aabe1f4c'::bytea
     ]
     AND trx.successful = TRUE
     AND session_started.block_id >= '1928585162635558598'::bigint
@@ -28,8 +28,10 @@ result_reward_awarded_events AS (
   JOIN chain_moonbeam_mainnet.block_transactions trx_1
     ON (trx_1.block_id = fin.block_id AND trx_1.tx_offset = fin.tx_offset)
   WHERE
-    fin.sender = '\x4f2e285227d43d9eb52799d0a28299540452446e'::bytea
-    AND fin.topics @> ARRAY['\x93dcf9329a330cb95723152c05719560f2fbd50e215c542854b27acc80c9108d'::bytea]
+    fin.sender = '\x254E3FA072324fa202577F24147066359947bC23'::bytea
+    AND fin.topics @> ARRAY[
+      '\x93dcf9329a330cb95723152c05719560f2fbd50e215c542854b27acc80c9108d'::bytea
+    ]
     AND trx_1.successful = TRUE
     AND fin.block_id >= '1928585162635558598'::bigint
   ORDER BY fin.block_id ASC, fin.log_offset ASC
@@ -43,8 +45,8 @@ result_quorum_not_reached_events AS (
   JOIN chain_moonbeam_mainnet.block_transactions trx_1
     ON (trx_1.block_id = fin.block_id AND trx_1.tx_offset = fin.tx_offset)
   WHERE
-    fin.sender = '\x4f2e285227d43d9eb52799d0a28299540452446e'::bytea
-    AND fin.topics @> ARRAY['\x31d16d882c6405d327fa305ecf0d52b45154868e0828822533fd2547f4b21a75'::bytea]
+    fin.sender = '\x254E3FA072324fa202577F24147066359947bC23'::bytea
+    AND fin.topics @> ARRAY['\x398fd8f638a7242217f011fd0720a06747f7a85b7d28d7276684b841baea4021'::bytea]
     AND trx_1.successful = TRUE
     AND fin.block_id >= '1928585162635558598'::bigint
   ORDER BY fin.block_id ASC, fin.log_offset ASC
