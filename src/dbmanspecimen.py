@@ -1,6 +1,5 @@
 import logging
 import threading
-import time
 import traceback
 import psycopg2
 import logformat
