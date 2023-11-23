@@ -82,7 +82,7 @@ class DBManagerSpecimen(threading.Thread):
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 17769579;',
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 18637000;',
                                 (self.last_block_id,),
                             )
                         else:
@@ -92,7 +92,9 @@ class DBManagerSpecimen(threading.Thread):
                             )
                         outputs = cur.fetchall()
 
-                self.logger.info(f"Processing {len(outputs)} specimen proof-session records...")
+                self.logger.info(
+                    f"Processing {len(outputs)} specimen proof-session records..."
+                )
                 self._process_outputs(outputs)
 
                 self.caught_up = True
@@ -101,11 +103,13 @@ class DBManagerSpecimen(threading.Thread):
             while True:
                 with self.__connect() as conn:
                     with conn.cursor() as cur:
-                        self.logger.info(f"Incremental scan block_id={self.last_block_id}")
+                        self.logger.info(
+                            f"Incremental scan block_id={self.last_block_id}"
+                        )
                         # we need everything after last max block number
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 17769579;',
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 18637000;',
                                 (self.last_block_id,),
                             )
                         else:
@@ -119,7 +123,7 @@ class DBManagerSpecimen(threading.Thread):
                 if self._process_outputs(outputs) == 0:
                     self.logger.info("No new specimen proof-session records discovered")
 
-                #time.sleep(10)
+                # time.sleep(10)
 
         except (Exception, psycopg2.DatabaseError) as ex:
             self.logger.critical("".join(traceback.format_exception(ex)))
