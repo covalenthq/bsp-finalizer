@@ -52,7 +52,9 @@ class FinalizationSpecimenRequest:
     def finalize_later(self):
         if self.chainId not in FinalizationSpecimenRequest.requests_to_be_finalized:
             FinalizationSpecimenRequest.requests_to_be_finalized[self.chainId] = {}
-        reqs_for_chain = FinalizationSpecimenRequest.requests_to_be_finalized[self.chainId]
+        reqs_for_chain = FinalizationSpecimenRequest.requests_to_be_finalized[
+            self.chainId
+        ]
         if self.blockHeight in reqs_for_chain:
             return False
         reqs_for_chain[self.blockHeight] = self
@@ -61,7 +63,9 @@ class FinalizationSpecimenRequest:
     def confirm_later(self):
         if self.chainId not in FinalizationSpecimenRequest.requests_to_be_confirmed:
             FinalizationSpecimenRequest.requests_to_be_confirmed[self.chainId] = {}
-        reqs_for_chain = FinalizationSpecimenRequest.requests_to_be_confirmed[self.chainId]
+        reqs_for_chain = FinalizationSpecimenRequest.requests_to_be_confirmed[
+            self.chainId
+        ]
         if self.blockHeight in reqs_for_chain:
             return False
         reqs_for_chain[self.blockHeight] = self
@@ -71,12 +75,14 @@ class FinalizationSpecimenRequest:
         if self.chainId not in FinalizationSpecimenRequest.requests_to_be_confirmed:
             return False
         return (
-            self.blockHeight in FinalizationSpecimenRequest.requests_to_be_confirmed[self.chainId]
+            self.blockHeight
+            in FinalizationSpecimenRequest.requests_to_be_confirmed[self.chainId]
         )
 
     def waiting_for_finalize(self):
         if self.chainId not in FinalizationSpecimenRequest.requests_to_be_finalized:
             return False
         return (
-            self.blockHeight in FinalizationSpecimenRequest.requests_to_be_finalized[self.chainId]
+            self.blockHeight
+            in FinalizationSpecimenRequest.requests_to_be_finalized[self.chainId]
         )
