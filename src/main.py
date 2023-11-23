@@ -53,7 +53,7 @@ if __name__ == "__main__":
         chain_table=CHAIN_TABLE_NAME,
         # lock=lock
     )
-    
+
     dbms.daemon = False
 
     # dbmr = DBManagerResult(
@@ -67,9 +67,9 @@ if __name__ == "__main__":
 
     # dbmr.daemon = True
 
-    finalizer = Finalizer(contract,lock)
+    finalizer = Finalizer(contract, lock)
     finalizer.daemon = True
-    
+
     dbms.start()
     finalizer.start()
 
@@ -77,7 +77,6 @@ if __name__ == "__main__":
 
     dbms.join()
     finalizer.join()
-
 
     # while is_any_thread_alive([finalizer, dbms]):
     #     time.sleep(0.1)
