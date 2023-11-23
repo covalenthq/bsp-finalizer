@@ -90,7 +90,9 @@ class DBManagerResult(threading.Thread):
                             )
                         outputs = cur.fetchall()
 
-                self.logger.info(f"Processing {len(outputs)} result proof-session records...")
+                self.logger.info(
+                    f"Processing {len(outputs)} result proof-session records..."
+                )
                 self._process_outputs(outputs)
 
                 self.caught_up = True
@@ -99,7 +101,9 @@ class DBManagerResult(threading.Thread):
             while True:
                 with self.__connect() as conn:
                     with conn.cursor() as cur:
-                        self.logger.info(f"Incremental scan block_id={self.last_block_id}")
+                        self.logger.info(
+                            f"Incremental scan block_id={self.last_block_id}"
+                        )
                         # we need everything after last max block number
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
@@ -131,7 +135,7 @@ class DBManagerResult(threading.Thread):
         while True:
             try:
                 self.__main_loop()
-                #time.sleep(10)
+                # time.sleep(10)
             except (Exception, psycopg2.DatabaseError) as ex:
                 self.logger.warning("".join(traceback.format_exception(ex)))
                 # this should never happen

@@ -15,6 +15,8 @@ import logformat
 MODULE_ROOT_PATH = pathlib.Path(__file__).parent.parent.resolve()
 
 print(MODULE_ROOT_PATH, "module root path")
+
+
 class LoggableReceipt:
     def __init__(self, fields, fail_reason=None):
         self.blockNumber = fields["blockNumber"]
@@ -66,12 +68,20 @@ class ProofChainContract:
         self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
         self.bspContractAddress: str = bsp_proofchain_address
         self.brpContractAddress: str = brp_proofchain_address
-        with (MODULE_ROOT_PATH / "abi" / "BlockSpecimenProofChainContractABI").open("r") as f:
-            self.bspContract = self.w3.eth.contract(address=self.bspContractAddress, abi=f.read())
+        with (MODULE_ROOT_PATH / "abi" / "BlockSpecimenProofChainContractABI").open(
+            "r"
+        ) as f:
+            self.bspContract = self.w3.eth.contract(
+                address=self.bspContractAddress, abi=f.read()
+            )
         self.logger = logformat.get_logger("Contract")
 
-        with (MODULE_ROOT_PATH / "abi" / "BlockResultProofChainContractABI").open("r") as f:
-            self.brpContract = self.w3.eth.contract(address=self.brpContractAddress, abi=f.read())
+        with (MODULE_ROOT_PATH / "abi" / "BlockResultProofChainContractABI").open(
+            "r"
+        ) as f:
+            self.brpContract = self.w3.eth.contract(
+                address=self.brpContractAddress, abi=f.read()
+            )
         self.logger = logformat.get_logger("Contract")
 
     # asynchronous defined function to loop
@@ -107,7 +117,9 @@ class ProofChainContract:
 
                 ex_desc = "\n".join(traceback.format_exception_only(ex))
                 self.logger.warning(f"exception occurred (will retry): {ex_desc}")
-                sleep_interval = (backoff_in_seconds * (2**exp)) + random.uniform(0, 1)
+                sleep_interval = (backoff_in_seconds * (2**exp)) + random.uniform(
+                    0, 1
+                )
                 time.sleep(sleep_interval)
                 retries_left -= 1
                 exp += 1
@@ -122,7 +134,9 @@ class ProofChainContract:
         if self.nonce is None:
             self._refresh_nonce()
         self.gasPrice = self.w3.eth.gasPrice
-        self.logger.info(f"TX dynamic gas price for specimen finalization is {self.gasPrice}")
+        self.logger.info(
+            f"TX dynamic gas price for specimen finalization is {self.gasPrice}"
+        )
         transaction = self.bspContract.functions.finalizeAndRewardSpecimenSession(
             chainId, blockHeight
         ).buildTransaction(
@@ -138,7 +152,9 @@ class ProofChainContract:
         )
 
         balance_before_send_wei = self.w3.eth.get_balance(self.finalizer_address)
-        balance_before_send_glmr = web3.auto.w3.fromWei(balance_before_send_wei, "ether")
+        balance_before_send_glmr = web3.auto.w3.fromWei(
+            balance_before_send_wei, "ether"
+        )
 
         predicted_tx_hash = eth_hash.auto.keccak(signed_txn.rawTransaction)
 
@@ -177,7 +193,9 @@ class ProofChainContract:
                     # retry immediately (we already waited)
                     return (False, 0)
                 case (-32603, "Specimen Session cannot be finalized"):
-                    self.logger.info("Skipping specimen session that cannot be finalized...")
+                    self.logger.info(
+                        "Skipping specimen session that cannot be finalized..."
+                    )
                     return (True, None)
                 # case (-32603, "already known"):
                 #     self.logger.info(
@@ -191,7 +209,9 @@ class ProofChainContract:
         if self.nonce is None:
             self._refresh_nonce()
         self.gasPrice = self.w3.eth.gasPrice
-        self.logger.info(f"TX dynamic gas price for result finalization is {self.gasPrice}")
+        self.logger.info(
+            f"TX dynamic gas price for result finalization is {self.gasPrice}"
+        )
         transaction = self.brpContract.functions.finalizeAndRewardResultSession(
             chainId, blockHeight
         ).buildTransaction(
@@ -207,7 +227,9 @@ class ProofChainContract:
         )
 
         balance_before_send_wei = self.w3.eth.get_balance(self.finalizer_address)
-        balance_before_send_glmr = web3.auto.w3.fromWei(balance_before_send_wei, "ether")
+        balance_before_send_glmr = web3.auto.w3.fromWei(
+            balance_before_send_wei, "ether"
+        )
 
         predicted_tx_hash = eth_hash.auto.keccak(signed_txn.rawTransaction)
 
@@ -246,7 +268,9 @@ class ProofChainContract:
                     # retry immediately (we already waited)
                     return (False, 0)
                 case (-32603, "Result Session cannot be finalized"):
-                    self.logger.info("Skipping Result session that cannot be finalized...")
+                    self.logger.info(
+                        "Skipping Result session that cannot be finalized..."
+                    )
                     return (True, None)
                 # case (-32603, "already known"):
                 #     self.logger.info(
@@ -265,8 +289,12 @@ class ProofChainContract:
             return (True, None)
 
         try:
-            self.w3.eth.wait_for_transaction_receipt(tx_hash, timeout=timeout, poll_latency=1.0)
-            receipt = LoggableReceipt(self.w3.eth.get_transaction_receipt(tx_hash), **kwargs)
+            self.w3.eth.wait_for_transaction_receipt(
+                tx_hash, timeout=timeout, poll_latency=1.0
+            )
+            receipt = LoggableReceipt(
+                self.w3.eth.get_transaction_receipt(tx_hash), **kwargs
+            )
 
             if receipt.succeeded():
                 self.nonce += 1
@@ -304,7 +332,9 @@ class ProofChainContract:
     #         # close loop to free up system resources
     #         loop.close()
     def estimate_gas_price(self):
-        pending_transactions = self.provider.make_request("parity_futureTransactions", [])
+        pending_transactions = self.provider.make_request(
+            "parity_futureTransactions", []
+        )
         gas_prices = []
         gases = []
         print(pending_transactions)
