@@ -1,11 +1,9 @@
 import logging
-import time
 import threading
 import sys
 import os
 
 from dotenv import load_dotenv
-from dbmanspecimen import DBManagerSpecimen
 from dbmanresult import DBManagerResult
 from contract import ProofChainContract
 from finalizer import Finalizer
@@ -45,17 +43,6 @@ if __name__ == "__main__":
         brp_proofchain_address=BRP_PROOFCHAIN_ADDRESS,
     )
 
-    # dbms = DBManagerSpecimen(
-    #     starting_point=int(BLOCK_ID_START),
-    #     user=DB_USER,
-    #     password=DB_PASSWORD,
-    #     database=DB_DATABASE,
-    #     host=DB_HOST,
-    #     chain_table=CHAIN_TABLE_NAME,
-    # )
-
-    # dbms.daemon = True
-
     dbmr = DBManagerResult(
         starting_point=int(BLOCK_ID_START),
         user=DB_USER,
@@ -65,17 +52,13 @@ if __name__ == "__main__":
         chain_table=CHAIN_TABLE_NAME,
     )
 
-    dbmr.daemon = False
+    dbmr.daemon = True
 
-    finalizer = Finalizer(contract, lock=lock)
+    finalizer = Finalizer(contract, lock)
     finalizer.daemon = True
 
-    # dbms.start()
     dbmr.start()
     finalizer.start()
 
     dbmr.join()
     finalizer.join()
-
-    # while is_any_thread_alive([finalizer, dbmr]):
-    #     time.sleep(0.3)
