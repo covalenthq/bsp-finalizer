@@ -1,6 +1,5 @@
 import logging
 import threading
-import time
 import traceback
 import psycopg2
 import logformat
@@ -25,6 +24,8 @@ class DBManagerSpecimen(threading.Thread):
 
         self.logger = logformat.get_logger("DB")
         self.starting_point = starting_point
+        # self.running = True
+        # self.lock = lock
 
     def _process_outputs(self, outputs):
         fl = 0
@@ -80,7 +81,7 @@ class DBManagerSpecimen(threading.Thread):
                         # we are catching up. So we only need to grab what we need to attempt for finalizing
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 17679865;',
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND observer_chain_finalization_tx_hash IS NULL AND origin_chain_block_height > 18621000;',
                                 (self.last_block_id,),
                             )
                         else:
@@ -107,7 +108,7 @@ class DBManagerSpecimen(threading.Thread):
                         # we need everything after last max block number
                         if self.chain_table == "chain_moonbeam_moonbase_alpha":
                             cur.execute(
-                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 17679865;',
+                                r'SELECT * FROM chain_moonbeam_moonbase_alpha."_proof_chain_specimen_events" WHERE observer_chain_session_start_block_id > %s AND origin_chain_block_height > 18621000;',
                                 (self.last_block_id,),
                             )
                         else:
@@ -121,7 +122,7 @@ class DBManagerSpecimen(threading.Thread):
                 if self._process_outputs(outputs) == 0:
                     self.logger.info("No new specimen proof-session records discovered")
 
-                time.sleep(10)
+                # time.sleep(10)
 
         except (Exception, psycopg2.DatabaseError) as ex:
             self.logger.critical("".join(traceback.format_exception(ex)))
@@ -134,8 +135,10 @@ class DBManagerSpecimen(threading.Thread):
             self.__fetch_last_block()
         while True:
             try:
+                # self.lock.acquire()
                 self.__main_loop()
-                time.sleep(10)
+                # self.lock.release()
+                # time.sleep(10)
             except (Exception, psycopg2.DatabaseError) as ex:
                 self.logger.warning("".join(traceback.format_exception(ex)))
                 # this should never happen

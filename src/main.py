@@ -1,11 +1,10 @@
 import logging
-import time
+import threading
 import sys
 import os
 
 from dotenv import load_dotenv
 from dbmanspecimen import DBManagerSpecimen
-from dbmanresult import DBManagerResult
 from contract import ProofChainContract
 from finalizer import Finalizer
 
@@ -29,6 +28,8 @@ if __name__ == "__main__":
     DB_DATABASE = os.getenv("DB_DATABASE")
     CHAIN_TABLE_NAME = os.getenv("CHAIN_TABLE_NAME")
 
+    lock = threading.Lock()
+
     logging.basicConfig(
         stream=sys.stdout,
         format="%(levelname)s %(name)s (%(filename)s:%(lineno)d) - %(message)s",
@@ -48,27 +49,16 @@ if __name__ == "__main__":
         database=DB_DATABASE,
         host=DB_HOST,
         chain_table=CHAIN_TABLE_NAME,
+        # lock=lock
     )
 
-    dbms.daemon = True
+    dbms.daemon = False
 
-    dbmr = DBManagerResult(
-        starting_point=int(BLOCK_ID_START),
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_DATABASE,
-        host=DB_HOST,
-        chain_table=CHAIN_TABLE_NAME,
-    )
-
-    dbmr.daemon = True
-
-    finalizer = Finalizer(contract)
+    finalizer = Finalizer(contract, lock)
     finalizer.daemon = True
 
     dbms.start()
-    dbmr.start()
     finalizer.start()
 
-    while is_any_thread_alive([finalizer, dbmr, dbms]):
-        time.sleep(0.3)
+    dbms.join()
+    finalizer.join()
