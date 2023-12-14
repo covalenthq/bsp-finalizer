@@ -123,7 +123,7 @@ class ProofChainContract:
             self._refresh_nonce()
         self.gasPrice = self.w3.eth.gasPrice
         self.logger.info(f"TX dynamic gas price for specimen finalization is {self.gasPrice}")
-        transaction = self.bspContract.functions.finalizeAndRewardSpecimenSession(
+        transaction = self.bspContract.functions.finalizeResultSession(
             chainId, blockHeight
         ).buildTransaction(
             {
