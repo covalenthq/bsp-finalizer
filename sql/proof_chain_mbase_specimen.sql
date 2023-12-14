@@ -11,12 +11,12 @@ session_started_events AS (
   JOIN chain_moonbeam_moonbase_alpha.block_transactions trx
     ON (trx.block_id = session_started.block_id AND trx.tx_offset = session_started.tx_offset)
   WHERE
-    session_started.sender = '\x1BFa3b5E9bE2c5298B7DE11B5Acb08c37683f4eF'::bytea
+    session_started.sender = '\x30F220B44E937dd6A2A43D91D564E259f3574eb8'::bytea
     AND session_started.topics @> ARRAY[
       '\x8b1f889addbfa41db5227bae3b091bd5c8b9a9122f874dfe54ba2f75aabe1f4c'::bytea
     ]
     AND trx.successful = TRUE
-    AND session_started.block_id >= '1910104892088990000'::bigint
+    AND session_started.block_id >= '2025156010573169636'::bigint
   ORDER BY session_started.block_id ASC, session_started.log_offset ASC
 ),
 specimen_reward_awarded_events AS (
@@ -28,10 +28,10 @@ specimen_reward_awarded_events AS (
   JOIN chain_moonbeam_moonbase_alpha.block_transactions trx_1
     ON (trx_1.block_id = fin.block_id AND trx_1.tx_offset = fin.tx_offset)
   WHERE
-    fin.sender = '\x1BFa3b5E9bE2c5298B7DE11B5Acb08c37683f4eF'::bytea
+    fin.sender = '\x30F220B44E937dd6A2A43D91D564E259f3574eb8'::bytea
     AND fin.topics @> ARRAY['\xf05ac779af1ec75a7b2fbe9415b33a67c00294a121786f7ce2eb3f92e4a6424a'::bytea]
     AND trx_1.successful = TRUE
-    AND fin.block_id >= '1910104892088990000'::bigint
+    AND fin.block_id >= '2025156010573169636'::bigint
   ORDER BY fin.block_id ASC, fin.log_offset ASC
 ),
 specimen_quorum_not_reached_events AS (
@@ -43,10 +43,10 @@ specimen_quorum_not_reached_events AS (
   JOIN chain_moonbeam_moonbase_alpha.block_transactions trx_1
     ON (trx_1.block_id = fin.block_id AND trx_1.tx_offset = fin.tx_offset)
   WHERE
-    fin.sender = '\x1BFa3b5E9bE2c5298B7DE11B5Acb08c37683f4eF'::bytea
+    fin.sender = '\x30F220B44E937dd6A2A43D91D564E259f3574eb8'::bytea
     AND fin.topics @> ARRAY['\x8340aa7a5b37153230f8b64fa66f25c843e5002c60e63a25db6a9195005ccabd'::bytea]
     AND trx_1.successful = TRUE
-    AND fin.block_id >= '1910104892088990000'::bigint
+    AND fin.block_id >= '2025156010573169636'::bigint
   ORDER BY fin.block_id ASC, fin.log_offset ASC
 ),
 all_finalization_events AS (
@@ -67,6 +67,6 @@ LEFT JOIN all_finalization_events afe ON (
   sse.origin_chain_id = afe.origin_chain_id
   AND sse.origin_chain_block_height = afe.origin_chain_block_height
 )
-WHERE sse.origin_chain_block_height > 17374020::numeric
+WHERE sse.origin_chain_block_height > 18781665::numeric
 ORDER BY sse.observer_chain_block_id ASC, sse.observer_chain_tx_offset ASC
 ;
