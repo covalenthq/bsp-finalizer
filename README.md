@@ -83,15 +83,15 @@ In order to run access to the covalent db is required. Please ask the code owner
 Pull the images and run (arm64) -
 
 ```bash
-    docker pull gcr.io/covalent-project/bsp-finalizer:latest
-    docker run --env-file .env gcr.io/covalent-project/bsp-finalizer:latest
+    docker pull us-docker.pkg.dev/covalent-project/network/bsp-finalizer:latest
+    docker run --env-file .env us-docker.pkg.dev/covalent-project/network/bsp-finalizer:latest
 ```
 
 1. Pull the images and run (amd64) -
 
 ```bash
-    docker pull gcr.io/covalent-project/bsp-finalizer:latest
-    docker run --env-file .env gcr.io/covalent-project/bsp-finalizer:latest
+    docker pull us-docker.pkg.dev/covalent-project/network/bsp-finalizer:latest
+    docker run --env-file .env us-docker.pkg.dev/covalent-project/network/bsp-finalizer:latest
 ```
 
 1. If the run is successful you should see logs such as below.
