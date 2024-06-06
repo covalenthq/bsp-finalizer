@@ -1,4 +1,4 @@
-# BSP Finalizer
+# BSP Finalizer [***This repository is deprecated and is no longer being actively developed.***]
 
 Finalisation and reward processor for consensus block specimens sessions and block results session using the covalent db and proofchain. It functions at the end of the BSP stack within the following pipeline `bsp-geth -> bsp-agent -> bsp-staking -> bsp-finalizer -> rudder/refiner ->  bsp-finalizer`
 
